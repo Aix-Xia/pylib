@@ -1,4 +1,3 @@
-import math
 
 def i2b(data:int, length:int)->bytes:
     return data.to_bytes(length, 'little')
@@ -680,29 +679,4 @@ class BMP:
 
 
 if __name__ == '__main__':
-    file = r'\\vdinas.ymtc.local\perdata\L8290039\Desktop\Folder\13. Product_Athena\DataLog\data\ATHENA_A12345_0_SORT1_x128y10_176_STESTCHIP__Unknown_1.0000_0_20231214133645.bmp'
-    bitmap = BMP.ReadFile(file)
-    # for iRow in range(bitmap.mapHeader.biHeight):
-    #     for iCol in range(bitmap.mapHeader.biWidth):
-    #         print(bitmap.data[iRow][iCol], end='\t')
-    #     print()
-    print(bitmap.fileHeader)
-    print(bitmap.mapHeader)
-
-
-    # import random
-    # width = 256
-    # height = 256
-    # bitCount = 4
-    # bmp = BMP(width, height, bitCount)
-    # for i in range(2**bitCount):
-    #     r = random.randint(0, 255)
-    #     g = random.randint(0, 255)
-    #     b = random.randint(0, 2255)
-    #     bmp.rgbquad[i].SetColor(red=r, green=g, blue=b)
-    #
-    # for w in range(width):
-    #     for h in range(height):
-    #         bmp.data[h][w] = random.randint(0, 2**bitCount-1)
-    #
-    # bmp.Write2File()
+    pass
