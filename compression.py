@@ -49,28 +49,5 @@ def ExtractFileFromTarGz(fileTarGz, fileTarget, folderOutput):
 
 
 if __name__ == '__main__':
-    import re
-    import progress
-    import file
-
-    folderIn = r'G:\bitmap'
-    folderOut = r'G:\Resource'
-
-    for wafer_id in os.listdir(folderIn):
-        if wafer_id == 'w10':
-            continue
-        waferIn = os.path.join(folderIn, wafer_id)
-        waferOut = os.path.join(folderOut, wafer_id.upper())
-        if not os.path.isdir(waferOut):
-            os.mkdir(waferOut)
-        fileCnt = file.GetFileCount(waferIn)
-        print(f'正在处理： {wafer_id}:')
-        for index, fileGzName in enumerate(os.listdir(waferIn), 1):
-            progress.PrintProgress(index, fileCnt, fileGzName)
-            fileGz = os.path.join(waferIn, fileGzName)
-            for file in LoopTarGzFile(fileGz, 'member'):
-                obj = re.match('.*errorMap_[Xx]\d+[Yy]\d+', file.name)
-                if obj == None:
-                    continue
-                ExtractFileFromTarGz(fileGz, file, waferOut)
+    pass
 
