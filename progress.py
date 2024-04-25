@@ -1,23 +1,67 @@
-_barFill = '▓'
-_spaceFill = ' '
-_barLength = 50
+def CheckChar(_value)->bool:
+    if type(_value) != str:
+        return False
+    if len(_value) != 1:
+        return False
+    return True
+def CheckNaturalNumber(_value, include0=True)->bool:
+    if type(_value) != int:
+        return False
+    limit = 0 if include0 else 1
+    if _value < limit:
+        return False
+    return True
+
+class config:
+    def __init__(self):
+        self.barFill = '▓'
+        self.spaceFill = ' '
+        self.barLength = 50
+    def _barFillGet(self):
+        return self._barFill
+    def _barFillSet(self, _value):
+        if CheckChar(_value):
+            self._barFill = _value
+    def _barFillDel(self):
+        print('barFill has delete!')
+    barFill = property(_barFillGet, _barFillSet, _barFillDel, 'This is barFill!')
+    def _spaceFillGet(self):
+        return self._spaceFill
+    def _spaceFillSet(self, _value):
+        if CheckChar(_value):
+            self._spaceFill = _value
+    def _spaceFillDel(self):
+        print('spaceFill has delete!')
+    spaceFill = property(_spaceFillGet, _spaceFillSet, _spaceFillDel, 'This is spaceFill')
+    def _barLengthGet(self):
+        return self._barLength
+    def _barLengthSet(self, _value):
+        if CheckNaturalNumber(_value, False):
+            self._barLength = _value
+    def _barLengthDel(self):
+        print('barLength has delete!')
+    barLength = property(_barLengthGet, _barLengthSet, _barLengthDel, 'This is barLength!')
+progressConfig = config()
 
 def SetProgressConfig(**kwargs):
-    global _barFill, _spaceFill, _barLength
-    _barFill = kwargs.get('barFill', _barFill)
-    _spaceFill = kwargs.get('spaceFill', _spaceFill)
-    _barLength = kwargs.get('barLength', _barLength)
+    progressConfig.barFill = kwargs.get('barFill', progressConfig.barFill)
+    progressConfig.spaceFill = kwargs.get('spaceFill', progressConfig.spaceFill)
+    progressConfig.barLength = kwargs.get('barLength', progressConfig.barLength)
 
 def PrintProgress(index:int, total:int, comment:str=''):
     if type(index) != int or type(total) != int or type(comment) != str:
         raise(TypeError('input parameter type error!'))
     if index <= 0 or total <= 0 or index > total:
         raise(ValueError('index or total value is error!'))
-    _barCnt = _barLength * index // total
-    _spaceCnt = _barLength - _barCnt
-    _bar = '|' + _barFill * _barCnt + _spaceFill * _spaceCnt + '|'
+    _barCnt = progressConfig.barLength * index // total
+    _spaceCnt = progressConfig.barLength - _barCnt
+    _bar = '|' + progressConfig.barFill * _barCnt + progressConfig.spaceFill * _spaceCnt + '|'
     _progress = f'({index}/{total}, {100*index/total:3.1f}%)'
     _comment = f'正在处理：{comment}'
     print(f'\r{_bar}{_progress}\t{_comment}', end='')
     if index == total:
         print()
+
+
+if __name__ == '__main__':
+    pass
