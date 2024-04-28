@@ -1,4 +1,4 @@
-import check
+from Package import check
 
 class config:
     def __init__(self):
@@ -46,7 +46,7 @@ def PrintProgress(index:int, total:int, comment:str=''):
     _bar = '|' + progressConfig.barFill * _barCnt + progressConfig.spaceFill * _spaceCnt + '|'
     _progress = f'({index}/{total}, {100*index/total:3.1f}%)'
     _comment = f'正在处理：{comment}'
-    print(f'\r{_bar}{_progress}\t{_comment}', end='')
+    print(f'\r{_bar}  {_progress}\t{_comment}', end='')
     if index == total:
         print()
 

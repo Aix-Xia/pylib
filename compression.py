@@ -18,7 +18,7 @@ def GetFileCountInTarGz(fileTarGz):
     with tarfile.open(fileTarGz, 'r:*') as fr:
         return len(fr.getmembers())
 
-def LoopTarGzFile(fileTarGz, type='name'):
+def LoopFileInTarGz(fileTarGz, type='name'):
     typeSet = ('name', 'member')
     if type not in typeSet:
         raise(ValueError(f'the type of "{type}" has not define'))
