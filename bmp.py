@@ -578,7 +578,7 @@ class BITMAPARRAY:
 
 
 class BMP:
-    def __init__(self, width, height, bitCount, file=r'./'):
+    def __init__(self, width, height, bitCount):
         # bitCount: 一个单元占用bit数(1, 4, 8, 24, 32)
         bfOffBits = 14 + 40 + (0 if (bitCount==24 or bitCount==32) else (2**bitCount) * 4)
         bfSize = bfOffBits + ((width * bitCount + 31) // 32 * 4 * height)
@@ -589,9 +589,8 @@ class BMP:
         elif bitCount in (24, 32):
             self.rgbquad = []
         self.data = BITMAPARRAY(width, height, bitCount)
-        self.fw = open(file, 'wb')
     def __del__(self):
-        self.fw.close()
+        pass
     @staticmethod
     def ReadFile(file):
         with open(file, 'rb') as fr:
@@ -669,13 +668,14 @@ class BMP:
         self.data.WriteData(iRow, iCol, value)
     def WriteAllDate(self, value):
         self.data.WriteAllData(value)
-    def Write2File(self):
-        self.fileHeader.Write2File(self.fw)
-        self.mapHeader.Write2File(self.fw)
-        if self.mapHeader.biBitCount not in (24, 32):
-            for rgb in self.rgbquad:
-                rgb.Write2File(self.fw)
-        self.data.Write2File(self.fw)
+    def Write2File(self, file):
+        with open(file, 'wb') as fw:
+            self.fileHeader.Write2File(fw)
+            self.mapHeader.Write2File(fw)
+            if self.mapHeader.biBitCount not in (24, 32):
+                for rgb in self.rgbquad:
+                    rgb.Write2File(fw)
+            self.data.Write2File(fw)
 
 
 if __name__ == '__main__':
