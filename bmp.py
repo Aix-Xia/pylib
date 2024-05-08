@@ -668,7 +668,9 @@ class BMP:
         self.data.WriteData(iRow, iCol, value)
     def WriteAllDate(self, value):
         self.data.WriteAllData(value)
-    def Write2File(self, file):
+    def ResetData(self):
+        self.data.WriteAllData(0)
+    def Save(self, file):
         with open(file, 'wb') as fw:
             self.fileHeader.Write2File(fw)
             self.mapHeader.Write2File(fw)
