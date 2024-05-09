@@ -4,7 +4,6 @@ def i2b(data:int, length:int)->bytes:
 def b2i(data:bytes)->int:
     return int.from_bytes(data, 'little')
 
-
 class BITMAPFILEHEADER:
     _bfType_list = (0x4d42,)
     def __init__(self, bfSize, bfOffBits):
@@ -446,6 +445,11 @@ class RGBQUAD:
         fw.write(self._rgbRed)
         fw.write(self._rgbReserved)
 
+white = RGBQUAD(255, 255, 255)
+black = RGBQUAD(0, 0, 0)
+red = RGBQUAD(255, 0, 0)
+green = RGBQUAD(0, 255, 0)
+blue = RGBQUAD(0, 0, 255)
 
 class LIST:
     def __init__(self, lenght:int, data:int=0, dmax:int=255):

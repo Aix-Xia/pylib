@@ -1,4 +1,4 @@
-from Package import check
+from pylib import check
 
 class config:
     def __init__(self):
