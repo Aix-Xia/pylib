@@ -133,6 +133,7 @@ class PRINTER:
         self._status = False
 printer = PRINTER()
 
+
 def Start(_display:Display, _foreColor:Color, _backColor:Color, _comment:str=''):
     if type(_display) != Display or type(_foreColor) != Color or type(_backColor) != Color:
         raise(TypeError('type error!'))
@@ -143,6 +144,7 @@ def End():
         printer.TurnOn()
     else:
         printer.TurnOff()
+
 
 def Print(*args, **kwargs):
     _display = kwargs.get('display', defaultDisplay)
@@ -156,10 +158,6 @@ def Print(*args, **kwargs):
     print(*args, sep=_sep, end=_end, file=_file, flush=_flush)
     End()
 
-def WarnPrint(*args, **kwargs):
-    Start(defaultDisplay, red, defaultColor, '[WARN] ')
-    print(*args, **kwargs)
-    End()
 
 _debugFlag = True
 def DebugDisable():
@@ -170,9 +168,14 @@ def DebugEnable():
 def DebugPrint(*args, **kwargs):
     if not _debugFlag:
         return
-    Start(defaultDisplay, defaultColor, defaultColor, '[Debug] ')
+    Start(defaultDisplay, blue, defaultColor, '[Debug] ')
     print(*args, **kwargs)
     End()
+def WarnPrint(*args, **kwargs):
+    Start(defaultDisplay, red, defaultColor, '[WARN] ')
+    print(*args, **kwargs)
+    End()
+
 
 if __name__ == '__main__':
     DebugPrint(1, 2, 3)
