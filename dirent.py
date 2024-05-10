@@ -49,13 +49,14 @@ def RemovePaths(*args):
     for _path in args:
         RemovePath(_path)
 
-def LoopFile(_path):
+def LoopFile(_path, recursion=True):
     lst = os.listdir(_path)
     for itemName in lst:
         item = os.path.join(_path, itemName)
         if os.path.isdir(item):
-            for file in LoopFile(item):
-                yield file
+            if recursion:
+                for file in LoopFile(item):
+                    yield file
         elif os.path.isfile(item):
             yield item
         else:

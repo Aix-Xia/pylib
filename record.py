@@ -4,6 +4,11 @@ import os
 import check
 
 class config:
+    _instance = None
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+        return cls._instance
     def __init__(self):
         self.lenStr = 100
         self.header = 'start'
@@ -146,6 +151,11 @@ def RecordLog(*args, **kwargs):
     print(*lst, sep=sep, end=end, file=file, flush=flush)
     if not fw.closed:
         fw.close()
+
+
+
+
+
 
 
 if __name__ == '__main__':
