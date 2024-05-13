@@ -1,9 +1,9 @@
 import sys
 import time
 import os
-import check
+from pylib import check
 
-class config:
+class RECORDER:
     _instance = None
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -99,62 +99,67 @@ class config:
     @property
     def fileLog(self):
         return os.path.join(self.folderRecord, self.fileNameLog + '.dat')
-recordConfig = config()
+record = RECORDER()
 
-def SetRecordConfig(**kwargs):
-    recordConfig.lenStr = kwargs.get('lenStr', recordConfig.lenStr)
-    recordConfig.header = kwargs.get('header', recordConfig.header)
-    recordConfig.tailer = kwargs.get('tailer', recordConfig.tailer)
-    recordConfig.fillChar = kwargs.get('fillChar', recordConfig.fillChar)
-    recordConfig.folderRecord = kwargs.get('folderRecord', recordConfig.folderRecord)
-    recordConfig.fileNamePrint = kwargs.get('fileNamePrint', recordConfig.fileNamePrint)
-    recordConfig.fileNameCallFunc = kwargs.get('fileNameCallFunc', recordConfig.fileNameCallFunc)
-    recordConfig.fileNameLog = kwargs.get('fileNameLog', recordConfig.fileNameLog)
+def SetRecorder(**kwargs):
+    record.lenStr = kwargs.get('lenStr', record.lenStr)
+    record.header = kwargs.get('header', record.header)
+    record.tailer = kwargs.get('tailer', record.tailer)
+    record.fillChar = kwargs.get('fillChar', record.fillChar)
+    record.folderRecord = kwargs.get('folderRecord', record.folderRecord)
+    record.fileNamePrint = kwargs.get('fileNamePrint', record.fileNamePrint)
+    record.fileNameCallFunc = kwargs.get('fileNameCallFunc', record.fileNameCallFunc)
+    record.fileNameLog = kwargs.get('fileNameLog', record.fileNameLog)
 
-# decorator
 def RecordCallFunc(func):
+    """
+    装饰器 --- 在指定文件中记录函数被调用情况
+    """
     def run(*args, **kwargs):
         localTime = time.localtime()
         t0 = time.time()
         result = func(*args, **kwargs)
         t1 = time.time()
-        with open(recordConfig.fileCallFunc, 'a+', encoding='utf-8', newline='') as fw:
+        with open(record.fileCallFunc, 'a+', encoding='utf-8', newline='') as fw:
             fw.write(f'[Record][{func.__name__}][{localTime.tm_year}-{localTime.tm_mon}-{localTime.tm_mday} {localTime.tm_hour}:{localTime.tm_min}:{localTime.tm_sec}] has used {1000*(t1-t0)}ms\n')
         return result
     return run
 
-# decorator
 def RecordPrint(func):
+    """
+    装饰器 --- 函数中的print全部打印到指定文件中
+    """
     def run(*args, **kwargs):
-        with open(recordConfig.filePrint, 'a+', encoding='utf-8', newline='') as fw:
+        with open(record.filePrint, 'a+', encoding='utf-8', newline='') as fw:
             localTime = time.localtime()
             default_stdout = sys.stdout
             sys.stdout = fw
-            print(recordConfig.header.center(recordConfig.lenStr, recordConfig.fillChar))
+            print(record.header.center(record.lenStr, record.fillChar))
             print(f'[{func.__name__}][RunTime]: {localTime.tm_year}-{localTime.tm_mon}-{localTime.tm_mday} {localTime.tm_hour}:{localTime.tm_min}:{localTime.tm_sec}')
             t0 = time.time()
             result = func(*args, **kwargs)
             t1 = time.time()
             print(f'[{func.__name__}][UserTime]: {1000*(t1-t0)}ms')
-            print(recordConfig.tailer.center(recordConfig.lenStr, recordConfig.fillChar))
+            print(record.tailer.center(record.lenStr, record.fillChar))
             sys.stdout = default_stdout
         return result
     return run
 
 def RecordLog(*args, **kwargs):
+    """
+    将需要记录的内容记录到指定文件，用法与print()相似
+    :param args: 打印内容
+    :param kwargs: 打印设置
+    """
     lst = list(map(lambda i:str(i), args))
-    fw = open(recordConfig.fileLog, 'a+', encoding='utf-8', newline='')
-    sep = kwargs.get('sep', ' ')
-    end = kwargs.get('end', '\n')
+    fw = open(record.fileLog, 'a+', encoding='utf-8', newline='')
+    sep = kwargs.get('sep', None)
+    end = kwargs.get('end', None)
     file = kwargs.get('file', fw)
-    flush = kwargs.get('flush', False)
+    flush = kwargs.get('flush', None)
     print(*lst, sep=sep, end=end, file=file, flush=flush)
     if not fw.closed:
         fw.close()
-
-
-
-
 
 
 

@@ -1,6 +1,6 @@
 from pylib import check
 
-class config:
+class PROGRESS:
     _instance = None
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -34,21 +34,21 @@ class config:
     def _barLengthDel(self):
         print('barLength has delete!')
     barLength = property(_barLengthGet, _barLengthSet, _barLengthDel, 'This is barLength!')
-progressConfig = config()
+progresser = PROGRESS()
 
 def SetProgressConfig(**kwargs):
-    progressConfig.barFill = kwargs.get('barFill', progressConfig.barFill)
-    progressConfig.spaceFill = kwargs.get('spaceFill', progressConfig.spaceFill)
-    progressConfig.barLength = kwargs.get('barLength', progressConfig.barLength)
+    progresser.barFill = kwargs.get('barFill', progresser.barFill)
+    progresser.spaceFill = kwargs.get('spaceFill', progresser.spaceFill)
+    progresser.barLength = kwargs.get('barLength', progresser.barLength)
 
 def PrintProgress(index:int, total:int, comment:str=''):
     if type(index) != int or type(total) != int or type(comment) != str:
         raise(TypeError('input parameter type error!'))
     if index <= 0 or total <= 0 or index > total:
         raise(ValueError('index or total value is error!'))
-    _barCnt = progressConfig.barLength * index // total
-    _spaceCnt = progressConfig.barLength - _barCnt
-    _bar = '|' + progressConfig.barFill * _barCnt + progressConfig.spaceFill * _spaceCnt + '|'
+    _barCnt = progresser.barLength * index // total
+    _spaceCnt = progresser.barLength - _barCnt
+    _bar = '|' + progresser.barFill * _barCnt + progresser.spaceFill * _spaceCnt + '|'
     _progress = f'({index}/{total}, {100*index/total:3.1f}%)'
     _comment = f'正在处理：{comment}'
     print(f'\r{_bar}  {_progress}\t{_comment}', end='')

@@ -41,7 +41,7 @@ turquoiseBlue = Color('TurquoiseBlue', 36, 46)  # 青蓝
 white = Color('White', 37, 47)                  # 白色
 
 class Display:
-    element = (0, 1, 4, 5, 7, 8)
+    element = (0, 1, 3, 4, 5, 7, 8)
     def __init__(self, _name, _display):
         self.name = _name
         self.display = _display
@@ -63,6 +63,7 @@ class Display:
     display = property(_getDisplay, _setDisplay, _delDisplay, 'This is display!')
 defaultDisplay = Display('Default', 0)  # 默认
 highLight = Display('HighLight', 1)     # 高亮
+italic = Display('Italic', 3)           # 斜体
 underLine = Display('UnderLine', 4)     # 下划线
 flicker = Display('Flicker', 5)         # 闪烁
 antiWhite = Display('Anti-White', 7)    # 反白
@@ -168,7 +169,7 @@ def DebugEnable():
 def DebugPrint(*args, **kwargs):
     if not _debugFlag:
         return
-    Start(defaultDisplay, blue, defaultColor, '[Debug] ')
+    Start(defaultDisplay, green, defaultColor, '[Debug] ')
     print(*args, **kwargs)
     End()
 def WarnPrint(*args, **kwargs):
@@ -178,4 +179,4 @@ def WarnPrint(*args, **kwargs):
 
 
 if __name__ == '__main__':
-    DebugPrint(1, 2, 3)
+    DebugPrint("args")

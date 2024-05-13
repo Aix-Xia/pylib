@@ -1,6 +1,9 @@
 import time
 
 def GetDurationStr(_time:float)->str:
+    """
+    将通过 两个time.time()获取的时间转换成字符串
+    """
     try:
         _time = float(_time)
         if _time < 0:
@@ -27,8 +30,8 @@ class TIMER:
         self.Init()
     def __dir__(self):
         return ('Init', 'Start', 'Pause', 'Restart', 'Stop', 'PrintTimeAccumulate', 'PrintLastUse')
-    def __del__(self):
-        self.Stop()
+    # def __del__(self):
+    #     self.Stop()
     @property
     def timeCurrent(self):
         return time.time()

@@ -580,7 +580,6 @@ class BITMAPARRAY:
         else:
             raise(ValueError('bitCount must be in (1, 4, 8, 24, 32)'))
 
-
 class BMP:
     def __init__(self, width, height, bitCount):
         # bitCount: 一个单元占用bit数(1, 4, 8, 24, 32)
