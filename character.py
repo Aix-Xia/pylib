@@ -144,7 +144,7 @@ class RandomString:
 if __name__ == '__main__':
     psw = RandomString()
     # RandomString.AppendOtherList('1234567', 'abcd')
-    psw.Config(6, numerical=True, lowerLetter=False, upperLetter=False, specialLetter=False, others=True, repeat=False, dynamic=True)
+    psw.Config(6, numerical=True, lowerLetter=False, upperLetter=False, specialLetter=False, others=False, repeat=True, dynamic=True)
 
     for i in range(20):
         print(psw, end='\t')

@@ -1,1 +1,1 @@
-__all__ = ['bmp', 'checker.py', 'compression', 'dirent', 'macro', 'printer', 'progress', 'recorder.py', 'timer']
+__all__ = ['bmp', 'character', 'checker', 'compression', 'dirent', 'macro', 'printer', 'progress', 'recorder', 'timer']
