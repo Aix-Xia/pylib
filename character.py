@@ -2,7 +2,7 @@ import random
 
 
 class RandomString:
-    __lstOther = ['_']
+    __lstOther = []
     __lstNumerical = [i for i in '0123456789']
     __lstLowerLetter = [i for i in 'abcdefghijklmnopqrstuvwxyz']
     __lstUpperLetter = [i for i in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ']
@@ -19,6 +19,10 @@ class RandomString:
         self.__string = ''
         self.Refresh()
     def __str__(self):
+        if self.dynamic:
+            self.Refresh()
+        return self.__string
+    def __call__(self):
         if self.dynamic:
             self.Refresh()
         return self.__string
@@ -82,7 +86,7 @@ class RandomString:
     def __delDynamic(self):
         print('dynamic has delete!')
     dynamic = property(__getDynamic, __setDynamic, __delDynamic, 'This is dynamic!')
-    def Config(self, length, **kwargs):
+    def Config(self, length:int, **kwargs):
         self.length = length
         self.numerical = kwargs.get('numerical', self.numerical)
         self.lowerLetter = kwargs.get('lowerLetter', self.lowerLetter)
@@ -91,6 +95,7 @@ class RandomString:
         self.others = kwargs.get('others', self.others)
         self.repeat = kwargs.get('repeat', self.repeat)
         self.dynamic = kwargs.get('dynamic', self.dynamic)
+        self.Refresh()
     def Refresh(self):
         lst = []
         if self.numerical:
@@ -116,7 +121,7 @@ class RandomString:
         self.__string = result
     @property
     def value(self):
-        return str(self)
+        return self.__string
     @classmethod
     def AppendOtherList(cls, *args):
         for value in args:
@@ -138,10 +143,10 @@ class RandomString:
 
 if __name__ == '__main__':
     psw = RandomString()
-    psw.Config(6, numerical=False, lowerLetter=False, upperLetter=False, specialLetter=False, others=True, repeat=False, dynamic=False)
-    RandomString.AppendOtherList('1234567', 'abcd')
+    # RandomString.AppendOtherList('1234567', 'abcd')
+    psw.Config(6, numerical=True, lowerLetter=False, upperLetter=False, specialLetter=False, others=True, repeat=False, dynamic=True)
 
-    for i in range(100):
-        psw.Refresh()
-        print(psw)
-
+    for i in range(20):
+        print(psw, end='\t')
+        a = psw()
+        print(a)

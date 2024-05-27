@@ -1,4 +1,4 @@
-from pylib import check
+from pylib import checker
 
 class PROGRESS:
     _instance = None
