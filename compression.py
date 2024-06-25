@@ -19,7 +19,7 @@ def GetFileCountInTarGz(fileTarGz):
         return len(fr.getmembers())
 
 def LoopFileInTarGz(fileTarGz, type='name'):
-    typeSet = ('name', 'member')
+    typeSet = ('name', 'member', 'buffer')
     if type not in typeSet:
         raise(ValueError(f'the type of "{type}" has not define'))
     with tarfile.open(fileTarGz, 'r:*') as fr:
@@ -28,6 +28,8 @@ def LoopFileInTarGz(fileTarGz, type='name'):
                 yield member.name
             elif type == 'member':
                 yield member
+            elif type == 'buffer':
+                yield fr.extractfile(member)
 
 def ExtractFileFromTarGz(fileTarGz, fileTarget, folderOutput):
     with tarfile.open(fileTarGz, 'r:*') as fr:
@@ -45,8 +47,6 @@ def ExtractFileFromTarGz(fileTarGz, fileTarget, folderOutput):
                 print(f'File {fileTarget.name} not found in the archive.')
         else:
             raise(TypeError(f'can not use "{type(fileTarget)}" type parameter'))
-
-
 
 if __name__ == '__main__':
     pass
