@@ -21,42 +21,24 @@ class RECORDER:
             self.fileNameCallFunc = r'CallFunc'
             self.fileNameLog = r'datalog'
             RECORDER._create = True
-    def __lenStr_get(self):
-        return self.__lenStr
     def __lenStr_set(self, _value):
         if checker.NaturalNumber(_value, False):
             self.__lenStr = _value
-    def __lenStr_del(self):
-        print('lenStr has delete!')
-    lenStr = property(__lenStr_get, __lenStr_set, __lenStr_del, 'This is lenStr!')
-    def __header_get(self):
-        return self.__header
+    lenStr = property(lambda self:self.__lenStr, __lenStr_set, lambda self:None, 'This is lenStr!')
     def __header_set(self, _value):
         if type(_value) != str:
             _value = str(_value)
         self.__header = _value
-    def __header_del(self):
-        print('header has delete!')
-    header = property(__header_get, __header_set, __header_del, 'This is header!')
-    def __tailer_get(self):
-        return self.__tailer
+    header = property(lambda self:self.__header, __header_set, lambda self:None, 'This is header!')
     def __tailer_set(self, _value):
         if type(_value) != str:
             _value = str(_value)
         self.__tailer = _value
-    def __tailer_del(self):
-        print('tailer has delete!')
-    tailer = property(__tailer_get, __tailer_set, __tailer_del, 'This is tailer!')
-    def __fillChar_get(self):
-        return self.__fillChar
+    tailer = property(lambda self:self.__tailer, __tailer_set, lambda self:None, 'This is tailer!')
     def __fillChar_set(self, _value):
         if checker.Char(_value):
             self.__fillChar = _value
-    def __fillChar_del(self):
-        print('fillChar has delete!')
-    fillChar = property(__fillChar_get, __fillChar_set, __fillChar_del, 'This is fillChar!')
-    def __folderRecord_get(self):
-        return self.__folderRecord
+    fillChar = property(lambda self:self.__fillChar, __fillChar_set, lambda self:None, 'This is fillChar!')
     def __folderRecord_set(self, _path):
         if os.path.isfile(_path):
             print(f'{_path} is not folder, change folder is fail!')
@@ -65,39 +47,25 @@ class RECORDER:
             self.__folderRecord = _path
         else:
             self.__folderRecord = _path
-    def __folderRecord_del(self):
-        print('folderRecord has delete!')
-    folderRecord = property(__folderRecord_get, __folderRecord_set, __folderRecord_del, 'This is folderRecord!')
-    def __fileNamePrint_get(self):
-        return self.__fileNamePrint
+    folderRecord = property(lambda self:self.__folderRecord, __folderRecord_set, lambda self:None, 'This is folderRecord!')
     def __fileNamePrint_set(self, _fileName):
         if not checker.NamingRule(_fileName):
             print(f'{_fileName} do not match naming rule! change print file name fail!')
         else:
             self.__fileNamePrint = _fileName
-    def __fileNamePrint_del(self):
-        print('fileNamePrint has delete!')
-    fileNamePrint = property(__fileNamePrint_get, __fileNamePrint_set, __fileNamePrint_del, 'This is fileNamePrint')
-    def __fileNameCallFunc_get(self):
-        return self.__fileNameCallFunc
+    fileNamePrint = property(lambda self:self.__fileNamePrint, __fileNamePrint_set, lambda self:None, 'This is fileNamePrint')
     def __fileNameCallFunc_set(self, _fileName):
         if not checker.NamingRule(_fileName):
             print(f'{_fileName} do not match naming rule! change call func file name fail!')
         else:
             self.__fileNameCallFunc = _fileName
-    def __fileNameCallFunc_del(self):
-        print('fileNameCallFunc has delete!')
-    fileNameCallFunc = property(__fileNameCallFunc_get, __fileNameCallFunc_set, __fileNameCallFunc_del, 'This is fileNameCallFunc')
-    def __fileNameLog_get(self):
-        return self.__fileNameLog
+    fileNameCallFunc = property(lambda self:self.__fileNameCallFunc, __fileNameCallFunc_set, lambda self:None, 'This is fileNameCallFunc')
     def __fileNameLog_set(self, _fileName):
         if not checker.NamingRule(_fileName):
             print(f'{_fileName} do not match naming rule! change log file name fail!')
         else:
             self.__fileNameLog = _fileName
-    def __fileNameLog_del(self):
-        print('fileNameLog has delete!')
-    fileNameLog = property(__fileNameLog_get, __fileNameLog_set, __fileNameLog_del, 'This is fileNameLog')
+    fileNameLog = property(lambda self:self.__fileNameLog, __fileNameLog_set, lambda self:None, 'This is fileNameLog')
     @property
     def filePrint(self):
         return os.path.join(self.folderRecord, self.fileNamePrint + '.dat')

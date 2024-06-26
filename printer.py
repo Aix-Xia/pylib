@@ -45,22 +45,14 @@ class Display:
     def __init__(self, _name, _display):
         self.name = _name
         self.display = _display
-    def _getName(self):
-        return self._name
-    def _setName(self, _value):
-        self._name = str(_value)
-    def _delName(self):
-        print('name has delete!')
-    name = property(_getName, _setName, _delName, 'This is name!')
-    def _getDisplay(self):
-        return self._display
-    def _setDisplay(self, _value):
+    def __setName(self, _value):
+        self.__name = str(_value)
+    name = property(lambda self:self.__name, __setName, lambda self:None, 'This is name!')
+    def __setDisplay(self, _value):
         if _value not in Display.element:
             raise(ValueError(f'{_value} is not define "display" data!'))
-        self._display = _value
-    def _delDisplay(self):
-        print('display has delete!')
-    display = property(_getDisplay, _setDisplay, _delDisplay, 'This is display!')
+        self.__display = _value
+    display = property(lambda self:self.__display, __setDisplay, lambda self:None, 'This is display!')
 defaultDisplay = Display('Default', 0)  # 默认
 highLight = Display('HighLight', 1)     # 高亮
 italic = Display('Italic', 3)           # 斜体
@@ -82,39 +74,27 @@ class PRINTER:
         self.TurnOn()
     def __del__(self):
         self.TurnOff()
-    def _getDisplay(self):
-        return self._display
-    def _setDisplay(self, _value):
+    def __displaySet(self, _value):
         if type(_value) == Display:
-            self._display = _value.display
+            self.__display = _value.display
         elif _value in Display.element:
-                self._display = _value
-    def _delDisplay(self):
-        print('display has delete!')
-    display = property(_getDisplay, _setDisplay, _delDisplay, 'This is display!')
-    def _getForeColor(self):
-        return self._foreColor
-    def _setForeColor(self, _value):
+                self.__display = _value
+    display = property(lambda self:self.__display, __displaySet, lambda self:None, 'This is display!')
+    def __foreColorSet(self, _value):
         if type(_value) == Color:
-            self._foreColor = _value.foreColor
+            self.__foreColor = _value.foreColor
         elif _value in Color.foreColorElement:
-            self._foreColor = _value
-    def _delForeColor(self):
-        print('foreColor has delete!')
-    foreColor = property(_getForeColor, _setForeColor, _delForeColor, 'This is foreColor!')
-    def _getBackColor(self):
-        return self._backColor
-    def _setBackColor(self, _value):
+            self.__foreColor = _value
+    foreColor = property(lambda self:self.__foreColor, __foreColorSet, lambda self:None, 'This is foreColor!')
+    def __setBackColor(self, _value):
         if type(_value) == Color:
-            self._backColor = _value.backColor
+            self.__backColor = _value.backColor
         elif _value in Color.backColorElement:
-            self._backColor = _value
-    def _delBackColor(self):
-        print('backColor has delete!')
-    backColor = property(_getBackColor, _setBackColor, _delBackColor, 'This is backColor!')
+            self.__backColor = _value
+    backColor = property(lambda self:self.__backColor, __setBackColor, lambda self:None, 'This is backColor!')
     @property
     def strStart(self):
-        return f'\033[{self._display};{self._foreColor};{self._backColor}m'
+        return f'\033[{self.__display};{self.__foreColor};{self.__backColor}m'
     @property
     def strEnd(self):
         return f'\033[0m'

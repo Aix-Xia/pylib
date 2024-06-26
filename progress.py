@@ -10,30 +10,18 @@ class PROGRESS:
         self.barFill = '▓'
         self.spaceFill = ' '
         self.barLength = 50
-    def _barFillGet(self):
-        return self._barFill
-    def _barFillSet(self, _value):
+    def __barFillSet(self, _value):
         if checker.Char(_value):
-            self._barFill = _value
-    def _barFillDel(self):
-        print('barFill has delete!')
-    barFill = property(_barFillGet, _barFillSet, _barFillDel, 'This is barFill!')
-    def _spaceFillGet(self):
-        return self._spaceFill
-    def _spaceFillSet(self, _value):
+            self.__barFill = _value
+    barFill = property(lambda self:self.__barFill, __barFillSet, lambda self:None, 'This is barFill!')
+    def __spaceFillSet(self, _value):
         if checker.Char(_value):
-            self._spaceFill = _value
-    def _spaceFillDel(self):
-        print('spaceFill has delete!')
-    spaceFill = property(_spaceFillGet, _spaceFillSet, _spaceFillDel, 'This is spaceFill')
-    def _barLengthGet(self):
-        return self._barLength
-    def _barLengthSet(self, _value):
+            self.__spaceFill = _value
+    spaceFill = property(lambda self:self.__spaceFill, __spaceFillSet, lambda self:None, 'This is spaceFill')
+    def __barLengthSet(self, _value):
         if checker.NaturalNumber(_value, False):
-            self._barLength = _value
-    def _barLengthDel(self):
-        print('barLength has delete!')
-    barLength = property(_barLengthGet, _barLengthSet, _barLengthDel, 'This is barLength!')
+            self.__barLength = _value
+    barLength = property(lambda self:self.__barLength, __barLengthSet, lambda self:None, 'This is barLength!')
 progresser = PROGRESS()
 
 def SetProgressConfig(**kwargs):
