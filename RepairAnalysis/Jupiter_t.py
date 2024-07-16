@@ -1,5 +1,7 @@
-import csv
-import os
+import csv, os
+
+headerMacro = ['MacroID', 'MacroX', 'MacroY', 'FBC', 'Repair']
+
 
 def lgc2psc(lra:int):
     if type(lra) != int:
@@ -14,7 +16,6 @@ def lgc2psc(lra:int):
         return lra - 736
     else:
         raise (ValueError(f'lra = {lra} out of limit!'))
-
 def psc2lgc(pra:int):
     if type(pra) != int:
         raise(TypeError(f'pra = {pra} is not int type!'))
@@ -28,12 +29,12 @@ def psc2lgc(pra:int):
         return pra - 160
     else:
         raise (ValueError(f'pra = {pra} out of limit!'))
-
 def GetMacroCoordinate(macro_id:int)->list:
     id_bin_str = bin(macro_id).lstrip('0b').rjust(13, '0')
     x_bin_str = id_bin_str[4:8] + id_bin_str[11:]
     y_bin_str = id_bin_str[:4] + id_bin_str[8:11]
     return [int(x_bin_str, 2), int(y_bin_str, 2)]
+
 
 class MAP:
     bytesCntPerWL = 12
@@ -46,6 +47,7 @@ class MAP:
     firstRepairCaFailLimit = 160
     firstRepairRaFailLimit = 4
     def __init__(self):
+        self.reserved = None
         self.result = -1    # -1:还未判定   0:没有fail   1:可修复   2:不可修复
         self.data = [[0 for i in range(MAP.caCnt)] for j in range(MAP.raCnt)]
         self.raRepair = [-1 for i in range(MAP.raRedundant)]
@@ -56,39 +58,6 @@ class MAP:
             raise(ValueError(f'{value} is not result value! pls check!'))
         self.__result = value
     result = property(lambda self:self.__result, __resultSet, lambda self:None)
-    def DebugClearBit(self, pra:int, ca:int):
-        self.data[pra][ca] = 0
-    def __GetWLFBC(self, pra:int):
-        fbc = 0
-        for ca in range(MAP.caCnt):
-            if self.data[pra][ca]:
-                fbc += 1
-        return fbc
-    def __ClearWL(self, pra:int):
-        for ca in range(MAP.caCnt):
-            self.data[pra][ca] = 0
-    def DebugClearWL(self, pra:int):
-        self.__ClearWL(pra)
-    def __GetBLFBC(self, sector:int, ca:int):
-        fbc = 0
-        for ra in range(sector * MAP.wlCntPerSector, (sector + 1)*MAP.wlCntPerSector):
-            if self.data[ra][ca]:
-                fbc += 1
-        return fbc
-    def __ClearBL(self, sector:int, ca:int):
-        for ra in range(sector * MAP.wlCntPerSector, (sector + 1)*MAP.wlCntPerSector):
-            self.data[ra][ca] = 0
-    def DebugClearBL(self, sector:int, ca:int):
-        self.__ClearBL(sector, ca)
-    def __GetMapFBC(self):
-        fbc = 0
-        for ra in range(MAP.raCnt):
-            for ca in range(MAP.caCnt):
-                if self.data[ra][ca]:
-                    fbc += 1
-        return fbc
-    def GetFailCount(self):
-        return self.__GetMapFBC()
     def Reset(self, data:bool=True, raRepair:bool=True, caRepair:bool=True, result:bool=True):
         if result:
             self.result = -1
@@ -103,14 +72,46 @@ class MAP:
             for sa in range(MAP.sectorCnt):
                 for index in range(MAP.caRedundant):
                     self.caRepair[sa][index] = -1
+
+    def __GetBLFBC(self, sector:int, ca:int):
+        fbc = 0
+        for ra in range(sector * MAP.wlCntPerSector, (sector + 1)*MAP.wlCntPerSector):
+            if self.data[ra][ca]:
+                fbc += 1
+        return fbc
+    def __GetWLFBC(self, pra:int):
+        fbc = 0
+        for ca in range(MAP.caCnt):
+            if self.data[pra][ca]:
+                fbc += 1
+        return fbc
+    def __GetMapFBC(self):
+        fbc = 0
+        for ra in range(MAP.raCnt):
+            for ca in range(MAP.caCnt):
+                if self.data[ra][ca]:
+                    fbc += 1
+        return fbc
+    def GetFailCount(self):
+        return self.__GetMapFBC()
+
+    def __ClearWL(self, pra:int):
+        for ca in range(MAP.caCnt):
+            self.data[pra][ca] = 0
+    def __ClearBL(self, sector:int, ca:int):
+        for ra in range(sector * MAP.wlCntPerSector, (sector + 1)*MAP.wlCntPerSector):
+            self.data[ra][ca] = 0
+
     def RecordFail(self, ra, ca, addNum=1, Physical=True):
         ra = ra if Physical else lgc2psc(ra)
         self.data[ra][ca] += addNum
-    def ReadFile(self, fr, addNum=1):
+    def ReadBinFile(self, fr, addNum=1):
+        fbc = 0
+        passTypeList = ['ExFileObject', 'BufferedReader'] # 'TextIOWrapper'
         frType = type(fr).__name__
         if frType == 'str':
             fr = open(fr, 'rb')
-        elif frType == 'ExFileObject':
+        elif frType in passTypeList:
             pass
         else:
             raise(TypeError(f'{type(fr).__name__} has not define!'))
@@ -121,17 +122,14 @@ class MAP:
                 for ibit in range(8):
                     if(byte & 1):
                         self.RecordFail(ra, 8*ibyte+ibit, addNum, False)
+                        fbc += 1
                     byte = byte >> 1
                     if byte == 0:
                         break
         if frType == 'str':
             fr.close()
-    @staticmethod
-    def Bin2Csv(binFile, csvFile, physical=True, realData=False):
-        macro = MAP()
-        macro.ReadFile(binFile)
-        macro.SaveMap2Csv(csvFile, physical=physical, realData=realData)
-        del macro
+        return fbc
+
     def __RedundantSort(self):
         caRepair = [[self.caRepair[i][j] for j in range(MAP.caRedundant)] for i in range(MAP.sectorCnt)]
         raRepair = [self.raRepair[i] for i in range(MAP.raRedundant)]
@@ -171,35 +169,35 @@ class MAP:
 
         # 统计剩余repair资源
         for sa in range(MAP.sectorCnt):
-            for ca in range(MAP.caRedundant):
-                if self.caRepair[sa][ca] != -1:
+            for ica in range(MAP.caRedundant):
+                if self.caRepair[sa][ica] != -1:
                     carc[sa] += 1
-                    self.__ClearBL(sa, ca)
-        for ra in range(MAP.raCnt):
-            if self.raRepair[ra] != -1:
+                    self.__ClearBL(sa, self.caRepair[sa][ica])
+        for ira in range(MAP.raRedundant):
+            if self.raRepair[ira] != -1:
                 rarc += 1
-                self.__ClearWL(lgc2psc(self.raRepair[ra]))
-        fbcPreRepair = self.GetFailCount()
+                self.__ClearWL(lgc2psc(self.raRepair[ira]))
+        self.reserved = self.GetFailCount()
         # 第一轮
         for sa in range(MAP.sectorCnt):
             for ca in range(MAP.caCnt):
                 if self.__GetBLFBC(sa, ca) > MAP.firstRepairCaFailLimit:
                     if carc[sa] >= MAP.caRedundant:
                         self.result = dieFail
-                        return fbcPreRepair
+                        return
                     self.caRepair[sa][carc[sa]] = ca
                     carc[sa] += 1
-        for ra in range(MAP.raCnt):
-            if self.__GetWLFBC(ra) > MAP.firstRepairRaFailLimit:
+        for pra in range(MAP.raCnt):
+            if self.__GetWLFBC(pra) > MAP.firstRepairRaFailLimit:
                 if rarc >= MAP.raRedundant:
                     self.result = dieFail
-                    return fbcPreRepair
-                self.raRepair[rarc] = psc2lgc(ra)
+                    return
+                self.raRepair[rarc] = psc2lgc(pra)
                 rarc += 1
-                self.__ClearWL(ra)
+                self.__ClearWL(pra)
         for sa in range(MAP.sectorCnt):
-            for index in range(carc[sa]):
-                self.__ClearBL(sa, self.caRepair[sa][index])
+            for ica in range(carc[sa]):
+                self.__ClearBL(sa, self.caRepair[sa][ica])
         # 第二轮
         for sa in range(MAP.sectorCnt):
             for index in range(MAP.caRedundant - carc[sa]):
@@ -215,21 +213,21 @@ class MAP:
                 self.caRepair[sa][carc[sa]] = temp_ca
                 carc[sa] += 1
                 self.__ClearBL(sa, temp_ca)
-        for ra in range(MAP.raCnt):
-            if self.__GetWLFBC(ra):
+        for pra in range(MAP.raCnt):
+            if self.__GetWLFBC(pra):
                 if rarc >= MAP.raRedundant:
                     self.result = dieFail
-                    return fbcPreRepair
-                self.raRepair[rarc] = psc2lgc(ra)
+                    return
+                self.raRepair[rarc] = psc2lgc(pra)
                 rarc += 1
-                self.__ClearWL(ra)
+                self.__ClearWL(pra)
         # 判断是否有fail
         if rarc + sum(carc) == 0:
             self.result = allPass
-            return fbcPreRepair
+            return
         else:
             self.result = canRepair
-            return fbcPreRepair
+            return
     def RepairAnalysis(self):
         temp = [[self.data[ra][ca] for ca in range(MAP.caCnt)] for ra in range(MAP.raCnt)]
         self.Reset(False, True, True, True)
@@ -243,11 +241,16 @@ class MAP:
         """
         temp = [[self.data[ra][ca] for ca in range(MAP.caCnt)] for ra in range(MAP.raCnt)]
         self.Reset(False, False, False, True)
-        fbcPreRepair = self.__RepairAnalysis()
-        print(f'之前的repair的code修复完后仍有FBC={fbcPreRepair}')
+        self.__RepairAnalysis()
         self.data = temp
         return self.result
 
+    @staticmethod
+    def Bin2Csv(binFile, csvFile, physical=True, realData=False):
+        macro = MAP()
+        macro.ReadFile(binFile)
+        macro.SaveMap2Csv(csvFile, physical=physical, realData=realData)
+        del macro
     def SaveRepairCode(self, folder, uid:int):
         if type(uid) != int:
             raise(TypeError('uid type must be "int"!'))
@@ -330,3 +333,115 @@ class MAP:
                     writer.writerow(row)
 
         fw.close()
+
+    def DataCompress(self, func, *args):
+        for pra in range(MAP.raCnt):
+            for ca in range(MAP.caCnt):
+                self.data[pra][ca] = func(self.data[pra][ca], *args)
+
+    def DebugClearBit(self, pra:int, ca:int):
+        self.data[pra][ca] = 0
+    def DebugClearWL(self, pra:int):
+        self.__ClearWL(pra)
+    def DebugClearBL(self, sector:int, ca:int):
+        self.__ClearBL(sector, ca)
+    def DebugRepairAnalysis(self, method):
+        allPass = 0
+        canRepair = 1
+        dieFail = 2
+
+        carc = [0 for i in range(MAP.sectorCnt)]
+        rarc = 0
+
+        #################################################################################
+        tempList = []
+        limit = 10
+        #################################################################################
+
+        self.Reset(False, True, True, True)
+        # 第一轮
+        for sa in range(MAP.sectorCnt):
+            for ca in range(MAP.caCnt):
+                if self.__GetBLFBC(sa, ca) > MAP.firstRepairCaFailLimit:
+                    if carc[sa] >= MAP.caRedundant:
+                        self.result = dieFail
+                        return self.result
+                    self.caRepair[sa][carc[sa]] = ca
+                    carc[sa] += 1
+        for pra in range(MAP.raCnt):
+            #################################################################################
+            if method == 1:
+                if self.__GetWLFBC(pra) > limit:
+                    tempList.append(pra ^ 1)
+            elif method == 2:
+                if self.__GetWLFBC(pra) > limit:
+                    tempList.append(pra)
+            #################################################################################
+            if self.__GetWLFBC(pra) > MAP.firstRepairRaFailLimit:
+                if rarc >= MAP.raRedundant:
+                    self.result = dieFail
+                    return self.result
+                self.raRepair[rarc] = psc2lgc(pra)
+                rarc += 1
+                self.__ClearWL(pra)
+        for sa in range(MAP.sectorCnt):
+            for ica in range(carc[sa]):
+                self.__ClearBL(sa, self.caRepair[sa][ica])
+        # 第二轮
+        for sa in range(MAP.sectorCnt):
+            for index in range(MAP.caRedundant - carc[sa]):
+                temp_cnt = 0
+                temp_ca = -1
+                for ca in range(MAP.caCnt):
+                    cnt = self.__GetBLFBC(sa, ca)
+                    if cnt > temp_cnt:
+                        temp_cnt = cnt
+                        temp_ca = ca
+                if temp_cnt == 0:
+                    break
+                self.caRepair[sa][carc[sa]] = temp_ca
+                carc[sa] += 1
+                self.__ClearBL(sa, temp_ca)
+        for pra in range(MAP.raCnt):
+            if self.__GetWLFBC(pra):
+                if rarc >= MAP.raRedundant:
+                    self.result = dieFail
+                    return self.result
+                self.raRepair[rarc] = psc2lgc(pra)
+                rarc += 1
+                self.__ClearWL(pra)
+        #################################################################################
+        if method == 1:
+            for pra in tempList:
+                if psc2lgc(pra) not in self.raRepair:
+                    if rarc >= 160:
+                        break
+                    self.raRepair[rarc] = psc2lgc(pra)
+                    rarc += 1
+        elif method == 2:
+            spaceLimit = 3
+            if len(tempList) >=2:
+                raCurrent = tempList[0]
+                for pra in tempList[1:]:
+                    raSpace = pra - raCurrent - 1
+                    if raSpace <= spaceLimit:
+                        for i in range(1, raSpace+1):
+                            if rarc >= 160:
+                                break
+                            if psc2lgc(raCurrent + i) not in self.raRepair:
+                                self.raRepair[rarc] = psc2lgc(raCurrent + i)
+                                rarc += 1
+                    raCurrent = pra
+        #################################################################################
+        # 判断是否有fail
+        if rarc + sum(carc) == 0:
+            self.result = allPass
+            return self.result
+        else:
+            self.result = canRepair
+            return self.result
+
+
+
+if __name__ == '__main__':
+    pass

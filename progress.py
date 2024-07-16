@@ -10,6 +10,10 @@ class PROGRESS:
         self.barFill = '▓'
         self.spaceFill = ' '
         self.barLength = 50
+        self.switch = True
+    def __switchSet(self, _value):
+        self.__switch = bool(_value)
+    switch = property(lambda self:self.__switch, __switchSet, lambda self:None, 'This is switch')
     def __barFillSet(self, _value):
         if checker.Char(_value):
             self.__barFill = _value
@@ -28,8 +32,11 @@ def SetProgressConfig(**kwargs):
     progresser.barFill = kwargs.get('barFill', progresser.barFill)
     progresser.spaceFill = kwargs.get('spaceFill', progresser.spaceFill)
     progresser.barLength = kwargs.get('barLength', progresser.barLength)
+    progresser.switch = kwargs.get('switch', progresser.switch)
 
 def PrintProgress(index:int, total:int, comment:str=''):
+    if not progresser.switch:
+        return
     if type(index) != int or type(total) != int or type(comment) != str:
         raise(TypeError('input parameter type error!'))
     if index <= 0 or total <= 0 or index > total:
@@ -42,6 +49,11 @@ def PrintProgress(index:int, total:int, comment:str=''):
     print(f'\r{_bar}  {_progress}\t{_comment}', end='')
     if index == total:
         print()
+
+def PrintTopProgress(index:int, total:int, item:str):
+    if not progresser.switch:
+        return
+    print(f'Currently Processing({index}/{total}): {item}')
 
 
 if __name__ == '__main__':
