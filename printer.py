@@ -5,31 +5,19 @@ class Color:
         self.name = _name
         self.foreColor = _foreColor
         self.backColor = _backColor
-    def _getName(self):
-        return self._name
     def _setName(self, _value):
-        self._name = str(_value)
-    def _delName(self):
-        print('name has delete!')
-    name = property(_getName, _setName, _delName, 'This is name!')
-    def _getForeColor(self):
-        return self._foreColor
+        self.__name = str(_value)
+    name = property(lambda self:self.__name, _setName, lambda self:None, 'This is name!')
     def _setForeColor(self, _value:int):
         if _value not in Color.foreColorElement:
             raise(ValueError(f'{_value} is not define "foreColor" data!'))
-        self._foreColor = _value
-    def _delForeColor(self):
-        print('foreColor has delete!')
-    foreColor = property(_getForeColor, _setForeColor, _delForeColor, 'This is foreColor!')
-    def _getBackColor(self):
-        return self._backColor
+        self.__foreColor = _value
+    foreColor = property(lambda self:self.__foreColor, _setForeColor, lambda self:None, 'This is foreColor!')
     def _setBackColor(self, _value:int):
         if _value not in Color.backColorElement:
             raise (ValueError(f'{_value} is not define "backColor" data!'))
-        self._backColor = _value
-    def _delBackColor(self):
-        print('backColor has delete!')
-    backColor = property(_getBackColor, _setBackColor, _delBackColor, 'This is backColor!')
+        self.__backColor = _value
+    backColor = property(lambda self:self.__backColor, _setBackColor, lambda self:None, 'This is backColor!')
 defaultColor = Color('Default', '', ' ')        # 默认
 black = Color('Black', 30, 40)                  # 黑色
 red = Color('Red', 31, 41)                      # 红色

@@ -26,66 +26,34 @@ class RandomString:
         if self.dynamic:
             self.Refresh()
         return self.__string
-    def __getNumerical(self)->bool:
-        return self.__numerical
     def __setNumerical(self, value:bool):
         self.__numerical = bool(value)
-    def __delNumerical(self):
-        print('numerical has delete!')
-    numerical = property(__getNumerical, __setNumerical, __delNumerical, 'This is numerical!')
-    def __getLowerLetter(self)->bool:
-        return self.__lowerLetter
+    numerical = property(lambda self:self.__numerical, __setNumerical, lambda self:None, 'This is numerical!')
     def __setLowerLetter(self, value:bool):
         self.__lowerLetter = bool(value)
-    def __delLowerLetter(self):
-        print('lowerLetter has delete!')
-    lowerLetter = property(__getLowerLetter, __setLowerLetter, __delLowerLetter, 'This is lowerLetter!')
-    def __getUpperLetter(self)->bool:
-        return self.__upperLetter
+    lowerLetter = property(lambda self:self.__lowerLetter, __setLowerLetter, lambda self:None, 'This is lowerLetter!')
     def __setUpperLetter(self, value:bool):
         self.__upperLetter = bool(value)
-    def __delUpperLetter(self):
-        print('upperLetter has delete!')
-    upperLetter = property(__getUpperLetter, __setUpperLetter, __delUpperLetter, 'This is upperLetter!')
-    def __getSpecialLetter(self)->bool:
-        return self.__specialLetter
+    upperLetter = property(lambda self:self.__upperLetter, __setUpperLetter, lambda self:None, 'This is upperLetter!')
     def __setSpecialLetter(self, value:bool):
         self.__specialLetter = bool(value)
-    def __delSpecialLetter(self):
-        print('specialLetter has delete!')
-    specialLetter = property(__getSpecialLetter, __setSpecialLetter, __delSpecialLetter, 'This is specialLetter!')
-    def __getLength(self)->int:
-        return self.__length
+    specialLetter = property(lambda self:self.__specialLetter, __setSpecialLetter, lambda self:None, 'This is specialLetter!')
     def __setLength(self, value:int):
         if type(value) != int:
             raise(TypeError('length must set int type data!'))
         if value <= 0:
             raise(ValueError('length must set more than 0'))
         self.__length = value
-    def __delLength(self):
-        print('length has delete!')
-    length = property(__getLength, __setLength, __delLength, 'This is length!')
-    def __getOthers(self)->bool:
-        return self.__others
+    length = property(lambda self:self.__length, __setLength, lambda self:None, 'This is length!')
     def __setOthers(self, value:bool):
         self.__others = bool(value)
-    def __delOthers(self):
-        print('others has delete!')
-    others = property(__getOthers, __setOthers, __delOthers, 'This is others!')
-    def __getRepeat(self)->bool:
-        return self.__repeat
+    others = property(lambda self:self.__others, __setOthers, lambda self:None, 'This is others!')
     def __setRepeat(self, value:bool):
         self.__repeat = bool(value)
-    def __delRepeat(self):
-        print('repeat has delete!')
-    repeat = property(__getRepeat, __setRepeat, __delRepeat, 'This is repeat!')
-    def __getDynamic(self)->bool:
-        return self.__dynamic
+    repeat = property(lambda self:self.__repeat, __setRepeat, lambda self:None, 'This is repeat!')
     def __setDynamic(self, value:bool):
         self.__dynamic = bool(value)
-    def __delDynamic(self):
-        print('dynamic has delete!')
-    dynamic = property(__getDynamic, __setDynamic, __delDynamic, 'This is dynamic!')
+    dynamic = property(lambda self:self.__repeat, __setDynamic, lambda self:None, 'This is dynamic!')
     def Config(self, length:int, **kwargs):
         self.length = length
         self.numerical = kwargs.get('numerical', self.numerical)
