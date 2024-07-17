@@ -1,7 +1,9 @@
-import csv, os
+import csv, os, tarfile, re
+from pylib.RepairAnalysis import Jupiter_p
+from pylib import progress
 
 headerMacro = ['MacroID', 'MacroX', 'MacroY', 'FBC', 'Repair']
-
+tempFile = r'G:\Test\temp\temp.csv'
 
 def lgc2psc(lra:int):
     if type(lra) != int:
@@ -441,6 +443,57 @@ class MAP:
             self.result = canRepair
             return self.result
 
+def DecodeOneDieFile(dieFilePath, writer, *args): # lotID='PPP000', waferID='#00', dieX='0', dieY='0'
+    macro = Jupiter_p.MAP()
+    with tarfile.open(dieFilePath, 'r:*') as fr:
+        members = fr.getmembers()
+        fileCount = len(members)
+        for index, member in enumerate(members, 1):
+            progress.PrintProgress(index, fileCount, member.name)
+            uid = re.match('uid_(\w+)_msb_0.bin', member.name).group(1)
+            x, y = Jupiter_p.GetMacroCoordinate(int(uid, 16))
+            macro.Reset()
+            fbc = macro.ReadBinFile(fr.extractfile(member))
+            repair = macro.RepairAnalysis()
+            row = list(args) + ['0x'+uid, x, y, fbc, int(repair)]
+            writer.writerow(row)
+
+def DecodeOneWaferFolder(waferFolderPath, fileOutPath=tempFile):
+    dieList = os.listdir(waferFolderPath)
+    dieCount = len(dieList)
+    with open(fileOutPath, 'w', encoding='utf-8', newline='') as fw:
+        writer = csv.writer(fw)
+        writer.writerow(['LotID', 'WaferID', 'DieX', 'DieY'] + headerMacro)
+        for index, dieName in enumerate(dieList, 1):
+            print(f'正在处理({index}/{dieCount}):{dieName}')
+            obj = re.match('errorMap_wafer(\w+)-(\d+)X(\d+)Y(\d+)\d+\.tar\.gz', dieName)
+            if obj:
+                lotID, waferID, dieX, dieY = obj.groups()
+                dieFile = os.path.join(waferFolderPath, dieName)
+                DecodeOneDieFile(dieFile, writer, lotID, waferID, dieX, dieY)
+
+def DecodeOneWaferFile(waferFilePath, fileOutPath=tempFile):
+    tempFolder = os.path.join(os.path.dirname(fileOutPath), 'temp')
+    tempFolderExist = os.path.isdir(tempFolder)
+    if not tempFolderExist:
+        os.mkdir(tempFolder)
+    with open(fileOutPath, 'w', encoding='utf-8', newline='') as fw:
+        writer = csv.writer(fw)
+        writer.writerow(['LotID', 'WaferID', 'DieX', 'DieY'] + headerMacro)
+        with tarfile.open(waferFilePath, 'r:*') as frWafer:
+            dieMembers = frWafer.getmembers()
+            dieCount = len(dieMembers)
+            for iDie, dieMember in enumerate(dieMembers, 1):
+                print(f'正在处理({iDie}/{dieCount}): {dieMember.name}')
+                obj = re.match('errorMap_wafer(\w+)-(\d+)X(\d+)Y(\d+)\w+\.tar\.gz', dieMember.name)
+                if obj:
+                    lotID, waferID, dieX, dieY = obj.groups()
+                frWafer.extract(dieMember, tempFolder)
+                dieFilePath = os.path.join(tempFolder, dieMember.name)
+                DecodeOneDieFile(dieFilePath, writer, lotID, waferID, dieX, dieY)
+                os.remove(dieFilePath)
+    if not tempFolderExist:
+        os.rmdir(tempFolder)
 
 
 if __name__ == '__main__':
