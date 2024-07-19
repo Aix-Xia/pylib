@@ -39,16 +39,16 @@ def GetMacroCoordinate(macro_id:int)->list:
 class MAP():
     def __init__(self):
         self.Reset(True, True)
-    def Reset(self, data:bool=True, redundancy:bool=True):
+    def Reset(self, data:bool=True, redy:bool=True):
         """
-        将data 或 redundancy 初始话
+        将data 或 redy 初始话
         :param data: 是否做data做reset
-        :param redundancy: 是否给redundancy做reset
+        :param redy: 是否给redundancy做reset
         :return:
         """
         if data:
             self.data = np.zeros((2208, 68), int)
-        if redundancy:
+        if redy:
             self.raRepair = [-1 for ira in range(160)]
             self.caRepair = [[-1 for ica in range(4)] for isa in range(3)]
     @property
@@ -57,13 +57,6 @@ class MAP():
         :return:目前map 的 fbc
         """
         return np.sum(self.data)
-    # def ReadBinFile(self, filePath:str):
-    #     fr = open(filePath, 'rb')
-    #     bitmap = np.unpackbits(np.frombuffer(fr.read(), dtype=np.uint8), bitorder="little").astype(np.uint8).reshape([2208, -1])[:, :68].astype(int)
-    #     fr.close()
-    #     bitmap = np.concatenate([bitmap[:736, :], np.concatenate([bitmap[736:1312, :], bitmap[2048:, :]]), bitmap[1312:2048, :]])
-    #     self.data = self.data | bitmap
-    #     return int(np.sum(bitmap))
     def ReadBinFile(self, fr):
         """
         读取bin格式文件，将bin文件数据与现有的map文件去并集
@@ -71,7 +64,7 @@ class MAP():
         :return: 读入文件的fbc
         """
         bitmap = np.unpackbits(np.frombuffer(fr.read(), dtype=np.uint8), bitorder="little").astype(np.uint8).reshape([2208, -1])[:, :68].astype(int)
-        bitmap = np.concatenate([bitmap[:736, :], np.concatenate([bitmap[736:1312, :], bitmap[2048:, :]]), bitmap[1312:2048, :]])
+        bitmap = np.concatenate([bitmap[:736, :], bitmap[736:1312, :], bitmap[2048:, :], bitmap[1312:2048, :]])
         self.data = self.data | bitmap
         return int(np.sum(bitmap))
     def RepairAnalysis(self):
@@ -265,6 +258,21 @@ def DecodeOneDieFolder(dieFolderPath, outputFolderPath):
     with concurrent.futures.ThreadPoolExecutor() as executor:
         executor.map(BinFileOperation, binFileNameList)
 
+def DecodeOnDieFolder2Csv(dieFolderPath, outputFilePath):
+    macro = MAP()
+    fw = open(outputFilePath, 'w', encoding='utf-8', newline='')
+    writer = csv.writer(fw)
+    for fileName in os.listdir(dieFolderPath):
+        uid = int(re.match('uid_(\w+)_msb_0\.bin', fileName).group(1), 16)
+        macro.Reset()
+        filePath = os.path.join(dieFolderPath, fileName)
+        with open(filePath, 'rb') as fr:
+            fbc = macro.ReadBinFile(fr)
+            result = macro.RepairAnalysis()
+            rFBC = macro.fbc
+            writer.writerow([uid, fbc, int(result), rFBC])
+    fw.close()
+
 
 def DecodeOneWaferFolder(waferfolderPath, outputFolderPath):
     """
@@ -299,7 +307,7 @@ def DecodeOneWaferFolder(waferfolderPath, outputFolderPath):
 #     nameList = os.listdir(path)
 #     with concurrent.futures.ThreadPoolExecutor() as executor:
 #         executor.map(DeleteFolder, nameList)
-
+#
 # if __name__ == '__main__':
 #     import time
 #

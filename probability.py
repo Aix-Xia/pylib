@@ -1,6 +1,6 @@
-import math
 from scipy.stats import binom
-import numpy as np
+
+
 
 def C(n:int, m:int)->int:
     if type(n) != int or type(m) != int:
@@ -23,28 +23,11 @@ def A(n:int, m:int)->int:
     return result
 
 
-# def GetRate(totalUnitCnt:int, lessUnitCnt:int, unitRate:float):
-#     result = 0
-#     for unitCnt in range(lessUnitCnt, totalUnitCnt + 1):
-#         rate = 1    # C(totalUnitCnt, unitCnt)
-#         for i in range(unitCnt):
-#             rate *= unitRate
-#             rate *= (totalUnitCnt - i)
-#             rate /= (i + 1)
-#         for i in range(unitCnt, totalUnitCnt):
-#             rate *= (1 - unitRate)
-#         result += rate
-#     return result
-#
-# # def GetRate1(totalUnitCnt, lessUnitCnt, unitRate):
-# #     return sum([math.factorial(totalUnitCnt)/(math.factorial(i) * math.factorial(totalUnitCnt-i)) * unitRate**i * (1-unitRate)**(totalUnitCnt-i) for i in range(lessUnitCnt, totalUnitCnt+1)])
-
-
 def Probability(sampleCount:int, occurProbability:float, occurCount:int):
     """
     :param sampleCount:样本量
-    :param occurProbability:发生概率
-    :param k:发生个数
+    :param occurProbability:单个样本发生概率
+    :param occurCount:样本发生个数
     :return:
     """
     return binom.pmf(occurCount, sampleCount, occurProbability)

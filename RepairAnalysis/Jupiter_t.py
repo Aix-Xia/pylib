@@ -466,7 +466,7 @@ def DecodeOneWaferFolder(waferFolderPath, fileOutPath=tempFile):
         writer.writerow(['LotID', 'WaferID', 'DieX', 'DieY'] + headerMacro)
         for index, dieName in enumerate(dieList, 1):
             print(f'正在处理({index}/{dieCount}):{dieName}')
-            obj = re.match('errorMap_wafer(\w+)-(\d+)X(\d+)Y(\d+)\d+\.tar\.gz', dieName)
+            obj = re.match('errorMap_wafer(\w+)-(\d+)X(\d+)Y(\d+).*\.tar\.gz', dieName)
             if obj:
                 lotID, waferID, dieX, dieY = obj.groups()
                 dieFile = os.path.join(waferFolderPath, dieName)
@@ -485,7 +485,7 @@ def DecodeOneWaferFile(waferFilePath, fileOutPath=tempFile):
             dieCount = len(dieMembers)
             for iDie, dieMember in enumerate(dieMembers, 1):
                 print(f'正在处理({iDie}/{dieCount}): {dieMember.name}')
-                obj = re.match('errorMap_wafer(\w+)-(\d+)X(\d+)Y(\d+)\w+\.tar\.gz', dieMember.name)
+                obj = re.match('errorMap_wafer(\w+)-(\d+)X(\d+)Y(\d+).*\.tar\.gz', dieMember.name)
                 if obj:
                     lotID, waferID, dieX, dieY = obj.groups()
                 frWafer.extract(dieMember, tempFolder)

@@ -70,13 +70,13 @@ def Heatmap(df, scale='linear', limit=None, vmaxRed=True, *, xline=None, yline=N
             plt.axvline(x=i + 0.5, linestyle="--", color="k", lw=0.5)
     plt.show()
 
-def CDF(axes, lst:list):
+def CDF(axes, lst:list, legend:str):
     length = len(lst)
 
     data = sorted(lst)
     cdf = [100 * i / (length-1) for i in range(length)]
 
-    axes.plot(data, cdf)
+    axes.plot(data, cdf, label=legend)
 
 
 
