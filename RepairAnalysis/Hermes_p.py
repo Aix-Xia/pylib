@@ -1,6 +1,5 @@
 import numpy
 
-
 """
 array_x count : 8.5
 array_y count : 23 (top and bottom array assemble to one array)

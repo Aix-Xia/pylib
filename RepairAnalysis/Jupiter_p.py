@@ -30,11 +30,26 @@ def psc2lgc(pra:int):
     else:
         raise (ValueError(f'pra = {pra} out of limit!'))
 def GetMacroCoordinate(macro_id:int)->list:
+    """
+    :param macro_id: uid
+    :return: [macroX, macroY]
+    """
     id_bin_str = bin(macro_id).lstrip('0b').rjust(13, '0')
     x_bin_str = id_bin_str[4:8] + id_bin_str[11:]
     y_bin_str = id_bin_str[:4] + id_bin_str[8:11]
     return [int(x_bin_str, 2), int(y_bin_str, 2)]
-
+def GetMacroInfo(macroFileName:str)->list:
+    """
+    :param macroFileName: macro file name
+    :return: [uid, macroX, macroY]
+    """
+    obj = re.match('uid_(\w+)_msb_0\.bin', macroFileName)
+    if obj:
+        uid = int(obj.group(1), 16)
+        coor = GetMacroCoordinate(uid)
+        return [uid, coor[0], coor[1]]
+    else:
+        return [None, None, None]
 
 class MAP():
     def __init__(self):

@@ -2,7 +2,7 @@ import csv, os, tarfile, re
 from pylib.RepairAnalysis import Jupiter_p
 from pylib import progress
 
-headerMacro = ['MacroID', 'MacroX', 'MacroY', 'FBC', 'Repair']
+headerMacro = ['MacroID', 'MacroX', 'MacroY', 'FBC', 'Repair', 'rFBC']
 tempFile = r'G:\Test\temp\temp.csv'
 
 def lgc2psc(lra:int):
@@ -455,7 +455,7 @@ def DecodeOneDieFile(dieFilePath, writer, *args): # lotID='PPP000', waferID='#00
             macro.Reset()
             fbc = macro.ReadBinFile(fr.extractfile(member))
             repair = macro.RepairAnalysis()
-            row = list(args) + ['0x'+uid, x, y, fbc, int(repair)]
+            row = list(args) + ['0x'+uid, x, y, fbc, int(repair), macro.fbc]
             writer.writerow(row)
 
 def DecodeOneWaferFolder(waferFolderPath, fileOutPath=tempFile):
@@ -466,7 +466,8 @@ def DecodeOneWaferFolder(waferFolderPath, fileOutPath=tempFile):
         writer.writerow(['LotID', 'WaferID', 'DieX', 'DieY'] + headerMacro)
         for index, dieName in enumerate(dieList, 1):
             print(f'正在处理({index}/{dieCount}):{dieName}')
-            obj = re.match('errorMap_wafer(\w+)-(\d+)X(\d+)Y(\d+).*\.tar\.gz', dieName)
+            # obj = re.match('errorMap.*_(\w+)-(\d+)[-]?X(\d+)Y(\d+).*\.tar\.gz', dieName)
+            obj = re.match('errorMap.*_(\w+)-(\d+)_X(\d+)Y(\d+).*\.tar\.gz', dieName)
             if obj:
                 lotID, waferID, dieX, dieY = obj.groups()
                 dieFile = os.path.join(waferFolderPath, dieName)

@@ -3,14 +3,8 @@ import matplotlib.colors as colors
 from matplotlib.colors import SymLogNorm, LogNorm
 import math
 
-GnRd1 = colors.LinearSegmentedColormap.from_list('rgy',
-                                                [(0.0, (0.0, 1.0, 0.0)),
-                                                 (0.5, (1.0, 1.0, 0.0)),
-                                                 (1.0, (1.0, 0.0, 0.0))] )
-GnRd2 = colors.LinearSegmentedColormap.from_list('rgy',
-                                                [(0.0, (1.0, 0.0, 0.0)),
-                                                 (0.5, (1.0, 1.0, 0.0)),
-                                                 (1.0, (0.0, 1.0, 0.0))] )
+GnRd1 = colors.LinearSegmentedColormap.from_list('rgy', [(0.0, (0.0, 1.0, 0.0)), (0.5, (1.0, 1.0, 0.0)), (1.0, (1.0, 0.0, 0.0))])
+GnRd2 = colors.LinearSegmentedColormap.from_list('rgy', [(0.0, (1.0, 0.0, 0.0)), (0.5, (1.0, 1.0, 0.0)), (1.0, (0.0, 1.0, 0.0))])
 def Heatmap(df, scale='linear', limit=None, vmaxRed=True, *, xline=None, yline=None):
     ysize, xsize = df.shape
 
