@@ -5,6 +5,7 @@ from pylib import progress
 headerMacro = ['MacroID', 'MacroX', 'MacroY', 'FBC', 'Repair', 'rFBC']
 tempFile = r'G:\Test\temp\temp.csv'
 
+
 def lgc2psc(lra:int):
     if type(lra) != int:
         raise(TypeError(f'lra = {lra} is not int type!'))
@@ -467,7 +468,7 @@ def DecodeOneWaferFolder(waferFolderPath, fileOutPath=tempFile):
         for index, dieName in enumerate(dieList, 1):
             print(f'正在处理({index}/{dieCount}):{dieName}')
             # obj = re.match('errorMap.*_(\w+)-(\d+)[-]?X(\d+)Y(\d+).*\.tar\.gz', dieName)
-            obj = re.match('errorMap.*_(\w+)-(\d+)_X(\d+)Y(\d+).*\.tar\.gz', dieName)
+            obj = re.match('errorMap_.*([0-9a-zA-Z]{6})-(\d+)[_]?X(\d+)Y(\d+).*\.tar\.gz', dieName)
             if obj:
                 lotID, waferID, dieX, dieY = obj.groups()
                 dieFile = os.path.join(waferFolderPath, dieName)

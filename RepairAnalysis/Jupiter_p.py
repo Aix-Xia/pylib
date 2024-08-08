@@ -2,6 +2,14 @@ import numpy as np
 import concurrent.futures
 import re, tarfile, os, csv
 
+headerMacro = ['MacroID', 'MacroX', 'MacroY', 'FBC', 'Repair', 'rFBC']
+
+def DecodeDieFileName(fileName):
+    obj = re.match('errorMap_.*([0-9a-zA-Z]{6})-(\d+)[_]?X(\d+)Y(\d+).*\.tar\.gz', fileName)
+    if obj:
+        return obj.groups()
+    else:
+        return None
 
 def lgc2psc(lra:int):
     if type(lra) != int:
@@ -29,6 +37,11 @@ def psc2lgc(pra:int):
         return pra - 160
     else:
         raise (ValueError(f'pra = {pra} out of limit!'))
+def GetMacroID(macroX, macroY):
+    x_bin_str = str(bin(macroX))[2:].rjust(6, '0')
+    y_bin_str = str(bin(macroY))[2:].rjust(7, '0')
+    id_bin_str = y_bin_str[:4] + x_bin_str[:4] + y_bin_str[4:] + x_bin_str[4:]
+    return int(id_bin_str, 2)
 def GetMacroCoordinate(macro_id:int)->list:
     """
     :param macro_id: uid
