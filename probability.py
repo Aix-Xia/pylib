@@ -70,5 +70,6 @@ def main():
         print(f'{rber} {UBER(totalBitCount, ecc, rber):.2e}')
 
 
+
 if __name__ == '__main__':
-   print(Factorial(5))
+   pass

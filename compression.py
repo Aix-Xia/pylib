@@ -1,5 +1,6 @@
-import tarfile
-import os
+import tarfile, os
+from pylib import progress
+
 
 
 # can decompress "tar" or "tar.gz" type file
@@ -48,6 +49,27 @@ def ExtractFileFromTarGz(fileTarGz, fileTarget, folderOutput):
         else:
             raise(TypeError(f'can not use "{type(fileTarget)}" type parameter'))
 
+def CompressFolder(folderPath):
+    def LoopFile(folderPath):
+        for file in os.listdir(folderPath):
+            path = os.path.join(folderPath, file)
+            if os.path.isdir(path):
+                for file in LoopFile(path):
+                    yield file
+            elif os.path.isfile(path):
+                yield path
+            else:
+                raise(ValueError('has not define!'))
+    if not os.path.isdir(folderPath):
+        raise(ValueError(f'{folderPath} is not folder path!'))
+    with tarfile.open(f'{folderPath}.tar.gz', 'w:gz') as fw:
+        os.chdir(folderPath)
+        for file in LoopFile('.'):
+            if os.path.basename(file) == r'Thumbs.db':
+                continue
+            print('正在压缩：'+file[2:])
+            fw.add(file[2:])
+
 if __name__ == '__main__':
-    pass
+    CompressFolder(r'G:\Temp\vblpLoop')
 

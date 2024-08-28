@@ -95,6 +95,42 @@ class MAP():
             self.raRepair[rarc] = int(pra)
             rarc += 1
         return result
+    def GetRedRACntNeed(self):
+        carc = 0
+        rarc = 0
+
+        # 1.1
+        caList = np.where(np.sum(self.data, axis=0) > MAP.__redRaCnt)[0]
+        if caList.size > MAP.__redCaCnt:
+            caList = np.argsort(-np.sum(self.data, axis=0), kind='mergesort')[:MAP.__redCaCnt]
+            carc = MAP.__redCaCnt
+        else:
+            carc = caList.size
+
+        # 1.2
+        raList = np.where(np.sum(self.data, axis=1) > MAP.__redCaCnt)[0]
+        if raList.size > MAP.__redRaCnt:
+            raList = np.argsort(-np.sum(self.data, axis=1), kind='mergesort')[:MAP.__redRaCnt]
+            rarc = MAP.__redRaCnt
+        else:
+            rarc = raList.size
+        self.data[raList, :] = 0
+
+        # 1.3
+        self.data[:, caList] = 0
+
+        # 2.1
+        fbcList = np.sum(self.data, axis=0)
+        rem = np.where(fbcList > 0)[0].size
+        rem = MAP.__redCaCnt - carc if ((MAP.__redCaCnt - carc) < rem) else rem
+        indexList = np.argsort(-fbcList, kind='mergesort')[:rem]
+        self.data[:, indexList] = 0
+
+        # 2.2
+        raList = np.where(np.sum(self.data, axis=1) > 0)[0]
+        rarc += raList.size
+
+        return rarc
     @classmethod
     def SetRedundancy(cls, ra:int, ca:int):
         cls.__redCaCnt = ca
