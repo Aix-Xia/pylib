@@ -55,6 +55,16 @@ def PrintTopProgress(index:int, total:int, item:str):
         return
     print(f'Currently Processing({index}/{total}): {item}')
 
+def funcNone(s:str):
+    return s
+def LoopMembers(members, top=False, func=funcNone):
+    length = len(members)
+    for index, member in enumerate(members, 1):
+        if top:
+            PrintTopProgress(index, length, func(member))
+        else:
+            PrintProgress(index, length, func(member))
+        yield member
 
 if __name__ == '__main__':
     pass
