@@ -1,1 +1,18 @@
-__all__ = ['bmp', 'character', 'checker', 'compression', 'dieMap', 'dirent', 'drawer', 'macro', 'printer', 'probability', 'progress', 'recorder', 'timer']
+__all__ = [
+    'analysis',
+    'bmp',
+    'character',
+    'checker',
+    'compression',
+    'debug',
+    'decorator',
+    'dirent',
+    'drawer',
+    'drawer2',
+    'macro',
+    'printer',
+    'probability',
+    'progress',
+    'recorder',
+    'timer'
+]

@@ -1,12 +1,12 @@
 import matplotlib.pyplot as plt
-import matplotlib.colors as colors
-from matplotlib.colors import LogNorm
+import matplotlib.colors as mcolors
 import numpy as np
 from scipy.stats import linregress
 
 
-GnRd1 = colors.LinearSegmentedColormap.from_list('rgy', [(0.0, (0.0, 1.0, 0.0)), (0.5, (1.0, 1.0, 0.0)), (1.0, (1.0, 0.0, 0.0))])
-GnRd2 = colors.LinearSegmentedColormap.from_list('rgy', [(0.0, (1.0, 0.0, 0.0)), (0.5, (1.0, 1.0, 0.0)), (1.0, (0.0, 1.0, 0.0))])
+numTypeNameSet = ('int', 'float') + tuple(f'int{2**i}' for i in range(3, 7)) + tuple(f'float{2**i}' for i in range(4, 7))
+iterTypeNameSet = ('Series', 'ndarray', 'list', 'tuple', 'set')
+
 
 # plt figure Setting
 dpi = 600
@@ -51,9 +51,9 @@ def SetAxes(ax=None, **kwargs):
 
     axvline = kwargs.get('axvline', None)
     if axvline != None:
-        if type(axvline) in (int, float):
+        if type(axvline).__name__ in numTypeNameSet:
             ax.axvline(axvline, linestyle="--", color="k", lw=0.5)
-        elif type(axvline) in (list, tuple, set):
+        elif type(axvline).__name__ in iterTypeNameSet:
             for x in axvline:
                 ax.axvline(x, linestyle="--", color="k", lw=0.5)
         else:
@@ -61,9 +61,9 @@ def SetAxes(ax=None, **kwargs):
 
     axhline = kwargs.get('axhline', None)
     if axhline != None:
-        if type(axhline) in (int, float):
+        if type(axhline).__name__ in numTypeNameSet:
             ax.axhline(axhline, linestyle="--", color="k", lw=0.5)
-        elif type(axhline) in (list, tuple, set):
+        elif type(axhline).__name__ in iterTypeNameSet:
             for y in axhline:
                 ax.axhline(y, linestyle="--", color="k", lw=0.5)
         else:
@@ -147,7 +147,6 @@ def SetColorBar(image, **kwargs):
         ctickList, clabelList = GetTicksAndLabels(cticks)
         colorbar.set_ticks(ctickList)
         colorbar.set_ticklabels(clabelList)
-
 def Set(ax=None, **kwargs):
     axesDict = dict()
     axisDict = dict()
@@ -165,6 +164,71 @@ def Set(ax=None, **kwargs):
     SetAxis(ax, **axisDict)
     SetFig(**figDict)
 
+
+# color map
+class COLOR:
+    def __init__(self, r, g, b, v=0.0):
+        self.r = r
+        self.g = g
+        self.b = b
+        self.v = v
+    def __str__(self):
+        return f'[{self.v}:({self.r}, {self.g}, {self.b})]'
+    def __call__(self, value):
+        self.v = value
+        return self
+    @staticmethod
+    def __SetData(value):
+        if type(value).__name__ not in numTypeNameSet:
+            raise(TypeError('input data must "int" or "float"!'))
+        elif value < 0 or value > 1:
+            raise(ValueError('input data is out of limit!'))
+        else:
+            return value
+    def __SetR(self, value):
+        self.__r = COLOR.__SetData(value)
+    def __SetG(self, value):
+        self.__g = COLOR.__SetData(value)
+    def __SetB(self, value):
+        self.__b = COLOR.__SetData(value)
+    def __SetV(self, value):
+        self.__v = COLOR.__SetData(value)
+    r = property(lambda self:self.__r, __SetR, lambda self:None)
+    g = property(lambda self:self.__g, __SetG, lambda self:None)
+    b = property(lambda self:self.__b, __SetB, lambda self:None)
+    v = property(lambda self:self.__v, __SetV, lambda self:None)
+    @classmethod
+    @property
+    def red(cls):
+        return COLOR(1, 0, 0)
+    @classmethod
+    @property
+    def yellow(cls):
+        return COLOR(1, 1, 0)
+    @classmethod
+    @property
+    def green(cls):
+        return COLOR(0, 1, 0)
+    @classmethod
+    @property
+    def blue(cls):
+        return COLOR(0, 0, 1)
+def CreateColorMap(lowColor:COLOR, highColor:COLOR, *args:COLOR):
+    lowColor.v = 0.0
+    highColor.v = 1.0
+    colorList = [lowColor, highColor] + list(filter(lambda c:((c.v != 0) or (c.v != 1)), args))
+    colorList = sorted(colorList, key=lambda i:i.v)
+    cd = {'red':[],
+          'green':[],
+          'blue':[]}
+    for color in colorList:
+        cd['red'].append((color.v, color.r, color.r))
+        cd['green'].append((color.v, color.g, color.g))
+        cd['blue'].append((color.v, color.b, color.b))
+    cmap = mcolors.LinearSegmentedColormap('LogColorMap', cd)
+    return cmap
+
+
 # Common Function
 def KwargsGet(kwargs, key, default, reserve:bool=False):
     if reserve:
@@ -175,13 +239,13 @@ def KwargsGet(kwargs, key, default, reserve:bool=False):
         except KeyError:
             return default
 def GetTicksAndLabels(ticks):
-    if type(ticks) not in [tuple, list]:
+    if type(ticks).__name__ not in iterTypeNameSet:
         raise (TypeError('ticks must tuple or list type'))
     tickList = []
     labelList = []
     allNum = True
     for tick in ticks:
-        if type(tick) not in (float, int):
+        if type(tick).__name__ not in numTypeNameSet:
             tickList = []
             labelList = []
             allNum = False
@@ -195,11 +259,19 @@ def GetTicksAndLabels(ticks):
         if len(ticks[0]) != len(ticks[1]):
             raise (ValueError('cticks length has error'))
         for i in range(len(ticks[0])):
-            if type(ticks[0][i]) not in (int, float):
+            if type(ticks[0][i]).__name__ not in numTypeNameSet:
                 raise (ValueError('ytick value has error'))
             tickList.append(ticks[0][i])
             labelList.append(str(ticks[1][i]))
     return tickList, labelList
+def GetAxes(ax=None):
+    if ax==None:
+        return plt.gca()
+    elif type(ax).__name__ == 'Axes':
+        raise(TypeError('ax must be type "Axes"'))
+    else:
+        return ax
+
 
 # Draw Image
 def CDF(series, ax=None, **kwargs):
@@ -211,7 +283,7 @@ def CDF(series, ax=None, **kwargs):
     length = len(data)
     cdf = np.linspace(0, 1, length)
 
-    ax = plt.gca() if ax==None else ax
+    ax = GetAxes(ax)
     ax.plot(data, cdf, label=kwargs.get('legend', None))
 
     kwargs['yticks'] = kwargs.get('yticks', ([0.1 * i for i in range(11)], [f'{10 * i}%' for i in range(11)]))
@@ -227,7 +299,7 @@ def PDF(series, ax=None, **kwargs):
     pdf = np.bincount(series)
     pdf = pdf[np.where(pdf!=0)] / np.sum(pdf)
 
-    ax = plt.gca() if ax == None else ax
+    ax = GetAxes(ax)
     ax.plot(value, pdf, label=kwargs.get('legend', None))
 
     Set(ax, **kwargs)
@@ -241,10 +313,11 @@ def Scatter(x, y, ax=None,**kwargs):
     vmin, vmax = np.min(x), np.max(x)
     xn = np.linspace((1+expandRate)*vmin-expandRate*vmax, (1+expandRate)*vmax-expandRate*vmin, count)
 
+    size = KwargsGet(kwargs, 'size', 5, False)
     color = KwargsGet(kwargs, 'color', None, False)
     legend = KwargsGet(kwargs, 'legend', None, True)
-    ax = plt.gca() if ax == None else ax
-    ax.scatter(x, y, s=5, color=color, label=legend)
+    ax = GetAxes(ax)
+    ax.scatter(x, y, s=size, color=color, label=legend)
 
     trendLine = KwargsGet(kwargs, 'trendLine', None, False)
     if trendLine == 'linear':
@@ -278,7 +351,7 @@ def Histograms(series, ax=None, **kwargs):
     step = KwargsGet(kwargs, 'step', (vmax-vmin)/30, False)
     bins = np.arange(vmin-step/2, vmax+step/2, step)
 
-    ax = plt.gca() if ax == None else ax
+    ax = GetAxes(ax)
     label = KwargsGet(kwargs, 'legend', None, True)
     alpha = KwargsGet(kwargs, 'alpha', 1, False)
     ax.hist(series, bins, label=label, alpha=alpha)
@@ -289,9 +362,29 @@ def BoxPlot(df, ax=None, **kwargs):
     columns = df.columns.to_list()
     kwargs['xticks'] = ([i + 1 for i in range(len(columns))], columns)
 
-    ax = plt.gca() if ax == None else ax
+    ax = GetAxes(ax)
     ax.boxplot(df)
 
+    Set(ax, **kwargs)
+
+def Bar(df, ax=None, **kwargs):
+    ax = GetAxes(ax)
+    axis = KwargsGet(kwargs, 'axis', 0, False)
+    if axis==1:
+        df = df.T
+    xlabel = df.index.to_list()
+    xticks = np.arange(len(xlabel))
+    width = 0.75 / df.shape[1]
+
+    size = KwargsGet(kwargs, 'fontsize', 8, False)
+    color = KwargsGet(kwargs, 'fontcolor', 'black', False)
+    label = KwargsGet(kwargs, 'datalabel', False, False)
+    for index, column in enumerate(df.columns):
+        rect = ax.bar(xticks + index * width, df[column], width, label=column)
+        if label:
+            ax.bar_label(rect, size=size, color=color)
+
+    kwargs['xticks'] = ([tick + width * (df.shape[1] - 1) / 2 for tick in xticks], xlabel)
     Set(ax, **kwargs)
 
 def HeatMap(df, ax=None, **kwargs):
@@ -301,12 +394,7 @@ def HeatMap(df, ax=None, **kwargs):
     """
     # ysize, xsize = df.shape
     aspect = KwargsGet(kwargs, 'aspect', 1, False) * df.shape[1] / df.shape[0]
-    GnRd = GnRd1 if KwargsGet(kwargs, 'vmaxRed', True, False) else GnRd2
-
-    vmin = KwargsGet(kwargs, 'vmin', None, False)
-    vmax = KwargsGet(kwargs, 'vmax', None, False)
-    vmin = (df.min() if (type(df) == np.ndarray) else df.min().min()) if (vmin == None) else vmin
-    vmax = (df.max() if (type(df) == np.ndarray) else df.max().max()) if (vmax == None) else vmax
+    vmaxRed = KwargsGet(kwargs, 'vmaxRed', True, False)
 
     axvline = KwargsGet(kwargs, 'axvline', None, True)
     if axvline:
@@ -316,31 +404,52 @@ def HeatMap(df, ax=None, **kwargs):
         kwargs['axhline'] = [i - 0.5 for i in axhline]
 
     # 画 heat map
-    ax = plt.gca() if ax == None else ax
+    ax = GetAxes(ax)
     scale = KwargsGet(kwargs, 'scale', 'linear', False)
-    if scale == 'log':
-        if vmax <= 0:
-            raise (ValueError('vmax can not less than 0 then scale is log'))
-        elif vmin <= 0:
-            vmin = min(vmax / 100, 0.9)
-        p = ax.imshow(df, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=GnRd, aspect=aspect, interpolation='nearest')
-    elif scale == 'linear':
-        p = ax.imshow(df, cmap=GnRd, vmin=vmin, vmax=vmax, aspect=aspect, interpolation='nearest')
+    if scale == 'linear':
+        vmin = KwargsGet(kwargs, 'vmin', np.min(df), False)
+        vmedian = KwargsGet(kwargs, 'vmedian', np.median(df), False)
+        vmax = KwargsGet(kwargs, 'vmax', np.max(df), False)
+        rate = (vmedian - vmin) / (vmax - vmin)
+        cmap = CreateColorMap(COLOR.green if vmaxRed else COLOR.red,
+                              COLOR.red if vmaxRed else COLOR.green,
+                              COLOR.yellow(rate))
+        norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
+    elif scale == 'log':
+        vmin = KwargsGet(kwargs, 'vmin', np.min(df[df > 0]), False)
+        vmedian = KwargsGet(kwargs, 'vmedian', np.median(df[df > 0]), False)
+        vmax = KwargsGet(kwargs, 'vmax', np.max(df[df > 0]), False)
+        rate = (np.log2(vmedian) - np.log2(vmin)) / (np.log2(vmax) - np.log2(vmin))
+        cmap = CreateColorMap(COLOR.green if vmaxRed else COLOR.red,
+                              COLOR.red if vmaxRed else COLOR.green,
+                              COLOR.yellow(rate))
+        norm = mcolors.LogNorm(vmin=vmin, vmax=vmax)
     else:
         raise(ValueError(f'{scale} has not define'))
+    image = ax.imshow(df, cmap=cmap, norm=norm, aspect=aspect, interpolation='nearest')
 
     # setting color bar
     cbar = KwargsGet(kwargs, 'cbar', False, False)
     cticks = KwargsGet(kwargs, 'cticks', None, False)
-    SetColorBar(p, cbar=cbar, cticks=cticks)
+    SetColorBar(image, cbar=cbar, cticks=cticks)
     Set(ax, **kwargs)
 
+def Text(df, ax=None, **kwargs):
+    ax = GetAxes(ax)
+    size = KwargsGet(kwargs, 'fontsize', 8, False)
+    color = KwargsGet(kwargs, 'fontcolor', 'black', False)
+
+    ysize, xsize = df.shape
+    for irow in range(ysize):
+        for icol in range(xsize):
+            try:
+                data = df.values[irow, icol]
+            except Exception:
+                data = df[irow, icol]
+            if not np.isnan(data):
+                value = f'{data}'
+                ax.text(icol, irow, value, horizontalalignment='center', verticalalignment='center',
+                        fontdict={'fontsize': size, 'color': color, 'weight': 'bold', 'family': 'Times New Roman'})
 
 if __name__ == '__main__':
-    # plt.plot([1, 2, 3, 4], [1, 2, 3, 4])
-    # SetAxes(xticks=((1, 2, 3, 4), ('a', 'b', 'c', 'd')), grid=True)
-    # plt.show()
-
-    x = np.random.randint(0, 100, 1000)
-    y = np.random.randint(0, 100, 1000)
-    Scatter(x, y, show=True)
+    pass
