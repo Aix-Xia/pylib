@@ -271,7 +271,14 @@ def GetAxes(ax=None):
         raise(TypeError('ax must be type "Axes"'))
     else:
         return ax
-
+def GetArray2D(data)->np.ndarray:
+    if type(data).__name__ == 'DataFrame':
+        data = data.values
+    elif type(data).__name__ == 'ndarray':
+        pass
+    else:
+        raise(TypeError(f'df type is {type(data).__name__} that has not define!'))
+    return data
 
 # Draw Image
 def CDF(series, ax=None, **kwargs):
@@ -392,8 +399,9 @@ def HeatMap(df, ax=None, **kwargs):
     :param kwargs: aspect:1, vmaxRed:True, vmin:None, vmax:None, scale:'linear', cbar:False, cticks:None
     :return:
     """
-    # ysize, xsize = df.shape
-    aspect = KwargsGet(kwargs, 'aspect', 1, False) * df.shape[1] / df.shape[0]
+    df = GetArray2D(df)
+    ysize, xsize = df.shape
+    aspect = KwargsGet(kwargs, 'aspect', 1, False) * xsize / ysize
     vmaxRed = KwargsGet(kwargs, 'vmaxRed', True, False)
 
     axvline = KwargsGet(kwargs, 'axvline', None, True)
@@ -407,25 +415,33 @@ def HeatMap(df, ax=None, **kwargs):
     ax = GetAxes(ax)
     scale = KwargsGet(kwargs, 'scale', 'linear', False)
     if scale == 'linear':
-        vmin = KwargsGet(kwargs, 'vmin', np.min(df), False)
-        vmedian = KwargsGet(kwargs, 'vmedian', np.median(df), False)
-        vmax = KwargsGet(kwargs, 'vmax', np.max(df), False)
+        vmin = KwargsGet(kwargs, 'vmin', np.nanmin(df), False)
+        vmedian = KwargsGet(kwargs, 'vmedian', np.nanmedian(df), False)
+        vmax = KwargsGet(kwargs, 'vmax', np.nanmax(df), False)
         rate = (vmedian - vmin) / (vmax - vmin)
-        cmap = CreateColorMap(COLOR.green if vmaxRed else COLOR.red,
-                              COLOR.red if vmaxRed else COLOR.green,
-                              COLOR.yellow(rate))
+        # cmap = CreateColorMap(COLOR.green if vmaxRed else COLOR.red,
+        #                       COLOR.red if vmaxRed else COLOR.green,
+        #                       COLOR.yellow(rate))
         norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
     elif scale == 'log':
-        vmin = KwargsGet(kwargs, 'vmin', np.min(df[df > 0]), False)
-        vmedian = KwargsGet(kwargs, 'vmedian', np.median(df[df > 0]), False)
-        vmax = KwargsGet(kwargs, 'vmax', np.max(df[df > 0]), False)
+        vmin = KwargsGet(kwargs, 'vmin', np.nanmin(df[df > 0]), False)
+        vmedian = KwargsGet(kwargs, 'vmedian', np.nanmedian(df[df > 0]), False)
+        vmax = KwargsGet(kwargs, 'vmax', np.nanmax(df[df > 0]), False)
         rate = (np.log2(vmedian) - np.log2(vmin)) / (np.log2(vmax) - np.log2(vmin))
-        cmap = CreateColorMap(COLOR.green if vmaxRed else COLOR.red,
-                              COLOR.red if vmaxRed else COLOR.green,
-                              COLOR.yellow(rate))
+        # cmap = CreateColorMap(COLOR.green if vmaxRed else COLOR.red,
+        #                       COLOR.red if vmaxRed else COLOR.green,
+        #                       COLOR.yellow(rate))
         norm = mcolors.LogNorm(vmin=vmin, vmax=vmax)
     else:
         raise(ValueError(f'{scale} has not define'))
+    if vmaxRed:
+        lc = COLOR.green
+        hc = COLOR.red
+    else:
+        lc = COLOR.red
+        hc = COLOR.green
+    mc = COLOR.yellow(rate)
+    cmap = CreateColorMap(lc, hc, mc)
     image = ax.imshow(df, cmap=cmap, norm=norm, aspect=aspect, interpolation='nearest')
 
     # setting color bar
@@ -447,7 +463,7 @@ def Text(df, ax=None, **kwargs):
             except Exception:
                 data = df[irow, icol]
             if not np.isnan(data):
-                value = f'{data}'
+                value = f'{data:.1e}'
                 ax.text(icol, irow, value, horizontalalignment='center', verticalalignment='center',
                         fontdict={'fontsize': size, 'color': color, 'weight': 'bold', 'family': 'Times New Roman'})
 
