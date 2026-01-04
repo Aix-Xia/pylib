@@ -1,4 +1,4 @@
-import os
+import os, shutil
 
 def GetFileName(filePath, suffix=False):
     """
@@ -47,7 +47,6 @@ def GetSize(path):
             subPath = os.path.join(path, name)
             size += GetSize(subPath)
     return size
-
 def GetFileCount(_path):
     """
     获取文件夹及其子文件夹中的所有文件个数
@@ -64,32 +63,6 @@ def GetFileCount(_path):
         else:
             raise(NotADirectoryError('pls check!'))
     return counter
-
-def RemovePath(_path):
-    """
-    删除文件或者文件夹（包含文件夹中的所有内容）
-    :param _path: 文件或者文件夹地址
-    :return:
-    """
-    if os.path.isdir(_path):
-        for item in os.listdir(_path):
-            item = os.path.join(_path, item)
-            RemovePath(item)
-        os.rmdir(_path)
-    elif os.path.isfile(_path):
-        os.remove(_path)
-    else:
-        pass
-
-def RemovePaths(*args):
-    """
-    删除文件或者文件夹（包含文件夹中的所有内容）
-    :param args: 多个 文件或者文件夹地址
-    :return: None
-    """
-    for _path in args:
-        RemovePath(_path)
-
 def LoopFile(_path, recursion=True):
     """
     迭代输出文件夹中的文件地址，
@@ -109,6 +82,31 @@ def LoopFile(_path, recursion=True):
         else:
             pass
 
+def Remove(_path):
+    if os.path.isfile(_path):
+        os.remove(_path)
+    elif os.path.isdir(_path):
+        for path_sub_name in os.listdir(_path):
+            _path_sub = os.path.join(_path, path_sub_name)
+            Remove(_path_sub)
+        os.rmdir(_path)
+    else:
+        print(_path)
+def Copy(src_path, dst_folder):
+    path_name = os.path.basename(src_path)
+    if os.path.isfile(src_path):
+        dst_path = os.path.join(dst_folder, path_name)
+        shutil.copy(src_path, dst_path)
+    elif os.path.isdir(src_path):
+        dst_folder_sub = os.path.join(dst_folder, path_name)
+        os.mkdir(dst_folder_sub)
+        for path_sub_name in os.listdir(src_path):
+            src_path_sub = os.path.join(src_path, path_sub_name)
+            Copy(src_path_sub, dst_folder_sub)
+    else:
+        print(src_path)
+def Move(src_path, dst_folder):
+    pass
 
 if __name__ == '__main__':
     pass
