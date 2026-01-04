@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 import matplotlib.colors as mcolors
 import numpy as np
 from scipy.stats import linregress
@@ -182,7 +183,7 @@ class COLOR:
         if type(value).__name__ not in numTypeNameSet:
             raise(TypeError('input data must "int" or "float"!'))
         elif value < 0 or value > 1:
-            raise(ValueError('input data is out of limit!'))
+            raise(ValueError(f'input data {value} is out of limit!'))
         else:
             return value
     def __SetR(self, value):
@@ -268,9 +269,9 @@ def GetAxes(ax=None):
     if ax==None:
         return plt.gca()
     elif type(ax).__name__ == 'Axes':
-        raise(TypeError('ax must be type "Axes"'))
-    else:
         return ax
+    else:
+        raise (TypeError(f'"{type(ax).__name__}" has not define!'))
 def GetArray2D(data)->np.ndarray:
     if type(data).__name__ == 'DataFrame':
         data = data.values
@@ -315,11 +316,6 @@ def Scatter(x, y, ax=None,**kwargs):
     """
     :param kwargs:  color:None, legend:None, trendLine:True, polyFit:1, annotate:False
     """
-    count = 100
-    expandRate = 0.05
-    vmin, vmax = np.min(x), np.max(x)
-    xn = np.linspace((1+expandRate)*vmin-expandRate*vmax, (1+expandRate)*vmax-expandRate*vmin, count)
-
     size = KwargsGet(kwargs, 'size', 5, False)
     color = KwargsGet(kwargs, 'color', None, False)
     legend = KwargsGet(kwargs, 'legend', None, True)
@@ -328,6 +324,11 @@ def Scatter(x, y, ax=None,**kwargs):
 
     trendLine = KwargsGet(kwargs, 'trendLine', None, False)
     if trendLine == 'linear':
+        count = 100
+        expandRate = 0.05
+        vmin, vmax = np.min(x), np.max(x)
+        xn = np.linspace((1 + expandRate) * vmin - expandRate * vmax, (1 + expandRate) * vmax - expandRate * vmin, count)
+
         polyFit = 1
         z = np.polyfit(x, y, polyFit)
         p = np.poly1d(z)
@@ -373,6 +374,105 @@ def BoxPlot(df, ax=None, **kwargs):
     ax.boxplot(df)
 
     Set(ax, **kwargs)
+def plot_boxplot(df, x_columns, y_column, title="箱线图", split_by=None, show_points=True, log_scale=True):
+    """
+    使用指定的列绘制箱线图
+
+    参数:
+    df (pandas.DataFrame): 包含数据的 DataFrame
+    x_columns (str or list): X 轴使用的列名（单个列名或列名列表）
+    y_column (str): Y 轴使用的列名
+    title (str): 图表标题
+    split_by (str, optional): 用于分割主类别的列名
+    show_points (bool, optional): 是否显示具体数据点
+    log_scale (bool, optional): 是否使用对数坐标系
+    """
+    plt.rcParams["font.family"] = ["SimHei", "WenQuanYi Micro Hei", "Heiti TC"]
+    plt.rcParams["axes.unicode_minus"] = True  # 解决负号显示问题
+
+    plt.figure(figsize=(12, 8))
+    if isinstance(x_columns, list) and len(x_columns) > 1:
+        # 处理多个 X 轴列的情况
+        df['组合类别'] = df[x_columns].apply(lambda row: '_'.join(row.values.astype(str)), axis=1)
+        groups = df.groupby('组合类别')[y_column].apply(list)
+
+        # 绘制箱线图
+        boxprops = dict(linestyle='-', linewidth=2, color='blue')
+        whiskerprops = dict(linestyle='--', linewidth=1.5, color='black')
+        flierprops = dict(marker='o', markerfacecolor='red', markersize=8, alpha=0.5)
+        medianprops = dict(linestyle='-', linewidth=2.5, color='red')
+
+        bp = plt.boxplot(groups.values, labels=groups.index, patch_artist=False,
+                         boxprops=boxprops, whiskerprops=whiskerprops,
+                         flierprops=flierprops, medianprops=medianprops)
+
+        plt.xlabel('_'.join(x_columns))
+        plt.xticks(rotation=45)
+
+        # 添加主类别分割线
+        if split_by and split_by in x_columns:
+            split_index = x_columns.index(split_by)
+            split_values = []
+            current_value = None
+
+            for i, label in enumerate(groups.index):
+                parts = label.split('_')
+                if split_index < len(parts):
+                    value = parts[split_index]
+                    if current_value is None:
+                        current_value = value
+                    elif value != current_value:
+                        split_values.append(i - 0.5)
+                        current_value = value
+
+            for pos in split_values:
+                plt.axvline(x=pos, linestyle='--', color='gray', alpha=0.5)
+
+        # 添加具体数据点
+        if show_points:
+            for i, (label, group) in enumerate(groups.items()):
+                x = np.random.normal(i + 1, 0.3, size=len(group))
+                plt.scatter(x, group, alpha=0.6, color='black', s=30, edgecolors='none')
+    else:
+        # 处理单个 X 轴列的情况
+        if isinstance(x_columns, list):
+            x_columns = x_columns[0]
+
+        groups = df.groupby(x_columns)[y_column].apply(list)
+
+        # 绘制箱线图
+        boxprops = dict(linestyle='-', linewidth=2, color='blue')
+        whiskerprops = dict(linestyle='--', linewidth=1.5, color='black')
+        flierprops = dict(marker='o', markerfacecolor='red', markersize=8, alpha=0.5)
+        medianprops = dict(linestyle='-', linewidth=2.5, color='red')
+
+        bp = plt.boxplot(groups.values, labels=groups.index, patch_artist=False,
+                         boxprops=boxprops, whiskerprops=whiskerprops,
+                         flierprops=flierprops, medianprops=medianprops)
+
+        # 添加具体数据点
+        if show_points:
+            for i, (label, group) in enumerate(groups.items()):
+                x = np.random.normal(i + 1, 0.04, size=len(group))
+                plt.scatter(x, group, alpha=0.6, color='black', s=30, edgecolors='none')
+
+    # 设置对数坐标系
+    if log_scale:
+        plt.yscale('log')
+
+        # 自定义Y轴标签格式为e-n形式
+        ax = plt.gca()
+        ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%.0e'))
+        ax.yaxis.set_minor_formatter(ticker.FormatStrFormatter('%.0e'))
+
+        # 设置y轴标签
+        plt.ylabel(f'{y_column} (对数刻度)')
+    else:
+        plt.ylabel(y_column)
+
+    plt.title(title)
+    plt.tight_layout()
+    plt.show()
 
 def Bar(df, ax=None, **kwargs):
     ax = GetAxes(ax)
@@ -424,9 +524,22 @@ def HeatMap(df, ax=None, **kwargs):
         #                       COLOR.yellow(rate))
         norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
     elif scale == 'log':
-        vmin = KwargsGet(kwargs, 'vmin', np.nanmin(df[df > 0]), False)
-        vmedian = KwargsGet(kwargs, 'vmedian', np.nanmedian(df[df > 0]), False)
-        vmax = KwargsGet(kwargs, 'vmax', np.nanmax(df[df > 0]), False)
+        df = np.where(df <= 0, np.nan, df)
+        try:
+            vmin_t = np.nanmin(df[df > 0])
+        except Exception:
+            vmin_t = 0.001
+        vmin = KwargsGet(kwargs, 'vmin', vmin_t, False)
+        try:
+            vmedian_t = np.nanmedian(df[df > 0])
+        except Exception:
+            vmedian_t = 0.01
+        vmedian = KwargsGet(kwargs, 'vmedian', vmedian_t, False)
+        try:
+            vmax_t = np.nanmax(df[df > 0])
+        except Exception:
+            vmax_t = 0.1
+        vmax = KwargsGet(kwargs, 'vmax', vmax_t, False)
         rate = (np.log2(vmedian) - np.log2(vmin)) / (np.log2(vmax) - np.log2(vmin))
         # cmap = CreateColorMap(COLOR.green if vmaxRed else COLOR.red,
         #                       COLOR.red if vmaxRed else COLOR.green,
@@ -450,7 +563,14 @@ def HeatMap(df, ax=None, **kwargs):
     SetColorBar(image, cbar=cbar, cticks=cticks)
     Set(ax, **kwargs)
 
-def Text(df, ax=None, **kwargs):
+def Text(df, fmt='.1%', ax=None, **kwargs):
+    """
+    :param df:
+    :param fmt: 书写格式 如('.2%', '.1e', '.2f', '02d')
+    :param ax:
+    :param kwargs:
+    :return:
+    """
     ax = GetAxes(ax)
     size = KwargsGet(kwargs, 'fontsize', 8, False)
     color = KwargsGet(kwargs, 'fontcolor', 'black', False)
@@ -463,7 +583,8 @@ def Text(df, ax=None, **kwargs):
             except Exception:
                 data = df[irow, icol]
             if not np.isnan(data):
-                value = f'{data:.1e}'
+                value = f'{data:{fmt}}'
+                # value = f'{data:.1e}'
                 ax.text(icol, irow, value, horizontalalignment='center', verticalalignment='center',
                         fontdict={'fontsize': size, 'color': color, 'weight': 'bold', 'family': 'Times New Roman'})
 
